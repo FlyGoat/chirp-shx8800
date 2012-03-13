@@ -1,0 +1,6 @@
+.*\~$
+.*\.pyc$
+.*\.orig$
+.*\.rej$
+dist
+build/bdist
