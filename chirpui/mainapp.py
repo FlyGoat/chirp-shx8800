@@ -925,11 +925,14 @@ If you think that it is valid, you can select a radio model below to force an op
                        _("With significant contributions by:"),
                        "Marco IZ3GME",
                        "Rick WZ3RO",
+                       "Tom KD7LXL",
                        "Vernon N7OH"
                        ))
         d.set_translator_credits("Polish: Grzegorz SQ2RBY" +
                                  os.linesep +
-                                 "Italian: Fabio IZ2QDH")
+                                 "Italian: Fabio IZ2QDH" +
+                                 os.linesep +
+                                 "Dutch: Michael PD4MT")
         d.set_comments(verinfo)
         
         d.run()
@@ -1043,7 +1046,7 @@ If you think that it is valid, you can select a radio model below to force an op
         devaction.set_visible(action.get_active())
 
     def do_change_language(self):
-        langs = ["Auto", "English", "Polish", "Italian"]
+        langs = ["Auto", "English", "Polish", "Italian", "Dutch"]
         d = inputdialog.ChoiceDialog(langs, parent=self,
                                      title="Choose Language")
         d.label.set_text(_("Choose a language or Auto to use the "
