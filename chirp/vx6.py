@@ -1,0 +1,252 @@
+# Copyright 2010 Dan Smith <dsmith@danplanet.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from chirp import chirp_common, yaesu_clone, directory
+from chirp import bitwise
+
+# flags.{even|odd}_pskip: These are actually "preferential *scan* channels".
+# Is that what they mean on other radios as well?
+
+# memory {
+#   step_changed: Channel step has been changed. Bit stays on even after
+#                 you switch back to default step. Don't know why you would
+#                 care
+#   half_deviation: 2.5 kHz deviation
+#   cpu_shifted:  CPU freq has been shifted (to move a birdie out of channel)
+#   power:        0-3: ["L1", "L2", "L3", "Hi"]
+#   pager:        Set if this is a paging memory
+#   tmodes:       0-7: ["", "Tone", "TSQL", "DTCS", "Rv Tn", "D Code", "T DCS", "D Tone"]
+#                      Rv Tn: Reverse CTCSS - mutes receiver on tone
+#                      The final 3 are for split:
+#                      D Code: DCS Encode only
+#                      T DCS:  Encodes tone, decodes DCS code
+#                      D Tone: Encodes DCS code, decodes tone
+# }
+mem_format = """
+#seekto 0x018A;
+u16 bank_sizes[24];
+
+#seekto 0x097A;
+struct {
+  u8 name[6];
+} bank_names[24];
+
+#seekto 0x0C0A;
+struct {
+  u16 channel[100];
+} bank_channels[24];
+
+#seekto 0x1ECA;
+struct {
+  u8 even_pskip:1,
+     even_skip:1,
+     even_valid:1,
+     even_masked:1,
+     odd_pskip:1,
+     odd_skip:1,
+     odd_valid:1,
+     odd_masked:1;
+} flags[450];
+
+#seekto 0x21CA;
+struct {
+  u8 unknown11:1,
+     step_changed:1,
+     half_deviation:1,
+     cpu_shifted:1,
+     unknown12:4;
+  u8 mode:2,
+     duplex:2,
+     tune_step:4;
+  bbcd freq[3];
+  u8 power:2,
+     unknown2:2,
+     pager:1,
+     tmode:3;
+  u8 name[6];
+  bbcd offset[3];
+  u8 unknown3:2,
+     tone:6;
+  u8 unknown4:1,
+     dcs:7;
+  u8 unknown5;
+} memory[900];
+"""
+
+DUPLEX = ["", "-", "+", "split"]
+MODES  = ["FM", "AM", "WFM", "FM"] # last is auto
+TMODES = ["", "Tone", "TSQL", "DTCS"]
+STEPS = list(chirp_common.TUNING_STEPS)
+STEPS.remove(6.25)
+STEPS.remove(30.0)
+STEPS.append(100.0)
+STEPS.append(9.0)
+
+CHARSET = ["%i" % int(x) for x in range(0, 10)] + \
+    [chr(x) for x in range(ord("A"), ord("Z")+1)] + \
+    list(" +-/\x00[]__" + ("\x00" * 9) + "$%%\x00**.|=\\\x00@") + \
+    list("\x00" * 100)
+
+POWER_LEVELS = [chirp_common.PowerLevel("Hi", watts=5.00),
+                chirp_common.PowerLevel("L3", watts=2.50),
+                chirp_common.PowerLevel("L2", watts=1.00),
+                chirp_common.PowerLevel("L1", watts=0.30)]
+POWER_LEVELS_220 = [chirp_common.PowerLevel("Hi", watts=1.50),
+                chirp_common.PowerLevel("L3", watts=1.00),
+                chirp_common.PowerLevel("L2", watts=0.50),
+                chirp_common.PowerLevel("L1", watts=0.20)]
+
+@directory.register
+class VX6Radio(yaesu_clone.YaesuCloneModeRadio):
+    BAUD_RATE = 19200
+    VENDOR = "Yaesu"
+    MODEL = "VX-6"
+
+    _model = "AH021"
+    _memsize = 32587
+    _block_lengths = [10, 32578]
+    _block_size = 16
+
+    def _checksums(self):
+        return [ yaesu_clone.YaesuChecksum(0x0000, 0x7F49) ]
+
+    def process_mmap(self):
+        self._memobj = bitwise.parse(mem_format, self._mmap)
+
+    def get_features(self):
+        rf = chirp_common.RadioFeatures()
+        rf.has_bank = False
+        rf.has_dtcs_polarity = False
+        rf.valid_modes = ["FM", "WFM", "AM", "NFM"]
+        rf.valid_tmodes = ["", "Tone", "TSQL", "DTCS"]
+        rf.valid_power_levels = POWER_LEVELS
+        rf.memory_bounds = (1, 900)
+        rf.valid_bands = [(500000, 998990000)]
+        rf.valid_characters = "".join(CHARSET)
+        rf.valid_name_length = 6
+        rf.can_odd_split = True
+        rf.has_ctone = False
+        return rf
+
+    def get_raw_memory(self, number):
+        return repr(self._memobj.memory[number-1])
+
+    def get_memory(self, number):
+        _mem = self._memobj.memory[number-1]
+        _flg = self._memobj.flags[(number-1)/2]
+
+        nibble = ((number-1) % 2) and "even" or "odd"
+        used = _flg["%s_masked" % nibble] and _flg["%s_valid" % nibble]
+        pskip = _flg["%s_pskip" % nibble]
+        skip = _flg["%s_skip" % nibble]
+
+        mem = chirp_common.Memory()
+        mem.number = number
+        if not used:
+            mem.empty = True
+            mem.power = POWER_LEVELS[0]
+            return mem
+
+        mem.freq = chirp_common.fix_rounded_step(int(_mem.freq) * 1000)
+        mem.offset = int(_mem.offset) * 1000
+        mem.rtone = mem.ctone = chirp_common.TONES[_mem.tone]
+        mem.tmode = TMODES[_mem.tmode]
+        mem.duplex = DUPLEX[_mem.duplex]
+        mem.mode = MODES[_mem.mode]
+        if mem.mode == "FM" and _mem.half_deviation:
+            mem.mode = "NFM"
+        mem.dtcs = chirp_common.DTCS_CODES[_mem.dcs]
+        mem.tuning_step = STEPS[_mem.tune_step]
+        mem.skip = pskip and "P" or skip and "S" or ""
+        
+        if mem.freq > 220000000 and mem.freq < 225000000:
+            mem.power = POWER_LEVELS_220[3 - _mem.power]
+        else:
+            mem.power = POWER_LEVELS[3 - _mem.power]
+
+        for i in _mem.name:
+            if i == 0xFF:
+                break
+            mem.name += CHARSET[i & 0x7F]
+        mem.name = mem.name.rstrip()
+
+        return mem
+
+    def set_memory(self, mem):
+        _mem = self._memobj.memory[mem.number-1]
+        _flag = self._memobj.flags[(mem.number-1)/2]
+
+        nibble = ((mem.number-1) % 2) and "even" or "odd"
+        
+        was_valid = int(_flag["%s_valid" % nibble])
+
+        _flag["%s_masked" % nibble] = not mem.empty
+        _flag["%s_valid" % nibble] = not mem.empty
+        if mem.empty:
+            return
+
+        _mem.freq = mem.freq / 1000
+        _mem.offset = mem.offset / 1000
+        _mem.tone = chirp_common.TONES.index(mem.rtone)
+        _mem.tmode = TMODES.index(mem.tmode)
+        _mem.duplex = DUPLEX.index(mem.duplex)
+        if mem.mode == "NFM":
+            _mem.mode = MODES.index("FM")
+            _mem.half_deviation = 1
+        else:
+            _mem.mode = MODES.index(mem.mode)
+            _mem.half_deviation = 0
+        _mem.dcs = chirp_common.DTCS_CODES.index(mem.dtcs)
+        _mem.tune_step = STEPS.index(mem.tuning_step)
+        if mem.power:
+            _mem.power = 3 - POWER_LEVELS.index(mem.power)
+        else:
+            _mem.power = 0
+
+        _flag["%s_pskip" % nibble] = mem.skip == "P"
+        _flag["%s_skip" % nibble] = mem.skip == "S"
+
+        _mem.name == ("\xFF" * 6)
+        for i in range(0, 6):
+            _mem.name[i] = CHARSET.index(mem.name.ljust(6)[i])
+
+        if mem.name.strip():
+            _mem.name[0] |= 0x80
+
+    def get_banks(self):
+        _banks = self._memobj.bank_names
+
+        banks = []
+        for bank in _banks:
+            name = ""
+            for i in bank.name:
+                name += CHARSET[i & 0x7F]
+            banks.append(name.rstrip())
+
+        return banks
+
+    # Return channels for a bank. Bank given as number
+    def get_bank_channels(self, bank):
+        nchannels = 0
+        size = self._memobj.bank_sizes[bank]
+        if size <= 198:
+            nchannels = 1 + size/2
+        _channels = self._memobj.bank_channels[bank]
+        channels = []
+        for i in range(0, nchannels):
+            channels.append(int(_channels.channel[i]))
+
+        return channels
+
