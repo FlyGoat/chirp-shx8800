@@ -36,13 +36,12 @@ struct {
   u8 unknown4:4,
      tuning_step:4;
   bbcd freq[3];
-  u8 unknown5:6,
+  u8 icon:6,
      mode:2;
   char name[8];
   bbcd offset[3];
-  u8 power:2,
-     tmode:2,
-     unknown6:2,
+  u8 tmode:4,
+     power:2,
      duplex:2;
   u8 unknown7:2,
      tone:6;
@@ -60,6 +59,11 @@ STEPS.remove(6.25)
 STEPS.remove(30.0)
 STEPS.append(100.0)
 STEPS.append(9.0)
+
+POWER_LEVELS = [chirp_common.PowerLevel("Hi", watts=5.00),
+                chirp_common.PowerLevel("L3", watts=2.50),
+                chirp_common.PowerLevel("L2", watts=1.00),
+                chirp_common.PowerLevel("L1", watts=0.05)]
 
 @directory.register
 class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
@@ -88,6 +92,7 @@ class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
                           ( 48000000, 729000000),
                           (800000000, 999000000)]
         rf.valid_skips = ["", "S", "P"]
+        rf.valid_power_levels = POWER_LEVELS
         rf.valid_name_length = 8
         return rf
 
@@ -104,7 +109,9 @@ class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
         mem = chirp_common.Memory()
         mem.number = number
 
-        if not _flg.used or not _flg.visible:
+        if not _flg.visible:
+            mem.empty = True
+        if not _flg.used:
             mem.empty = True
             return mem
 
@@ -116,7 +123,8 @@ class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
             mem.mode = "NFM"
         mem.tuning_step = STEPS[_mem.tuning_step]
         mem.offset = int(_mem.offset) * 1000
-        mem.tmode = TMODES[_mem.tmode]
+        mem.power = POWER_LEVELS[3 - _mem.power]
+        mem.tmode = TMODES[_mem.tmode & 0x3] # masked so bad mems can be read
         mem.rtone = mem.ctone = chirp_common.TONES[_mem.tone]
         mem.dtcs = chirp_common.DTCS_CODES[_mem.dtcs]
 
@@ -128,7 +136,21 @@ class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
         _mem = self._memobj.memory[mem.number-1]
         _flg = self._memobj.flag[mem.number-1]
         
-        _flg.used = not mem.empty
+        # initialize new channel to safe defaults
+        if not mem.empty and not _flg.used:
+            _flg.used = True
+            _mem.unknown1 = 0x00
+            _mem.unknown2 = 0x00
+            _mem.unknown3 = 0x00
+            _mem.unknown4 = 0x00
+            _mem.icon = 12 # file cabinet icon
+            _mem.unknown7 = 0x00
+            _mem.unknown8 = 0x00
+            _mem.unknown9 = 0x00
+            
+        if mem.empty and _flg.used and not _flg.visible:
+            _flg.used = False
+            return
         _flg.visible = not mem.empty
         if mem.empty:
             return
@@ -144,6 +166,10 @@ class VX5Radio(yaesu_clone.YaesuCloneModeRadio):
             _mem.half_deviation = 0
         _mem.tuning_step = STEPS.index(mem.tuning_step)
         _mem.offset = int(mem.offset / 1000)
+        if mem.power:
+            _mem.power = 3 - POWER_LEVELS.index(mem.power)
+        else:
+            _mem.power = 0
         _mem.tmode = TMODES.index(mem.tmode)
         _mem.tone = chirp_common.TONES.index(mem.rtone)
         _mem.dtcs = chirp_common.DTCS_CODES.index(mem.dtcs)
