@@ -34,71 +34,14 @@ except ImportError,e:
     common.log_exception()
     common.show_error("\nThe Pyserial module is not installed!")
 from chirp import platform, xml, generic_csv, directory, util
-from chirp import ic9x, kenwood_live, idrp, vx7
+from chirp import ic9x, kenwood_live, idrp, vx7, vx5
 from chirp import CHIRP_VERSION, chirp_common, detect, errors
 from chirp import icf, ic9x_icf
-from chirpui import editorset, clone, miscwidgets, config, reporting
+from chirpui import editorset, clone, miscwidgets, config, reporting, fips
 
 CONF = config.get()
 
 KEEP_RECENT = 8
-
-FIPS_CODES = {
-    "Alaska"               : 2,
-    "Alabama"              : 1,
-    "Arkansas"             : 5,
-    "Arizona"              : 4,
-    "California"           : 6,
-    "Colorado"             : 8,
-    "Connecticut"          : 9,
-    "District of Columbia" : 11,
-    "Delaware"             : 10,
-    "Florida"              : 12,
-    "Georgia"              : 13,
-    "Guam"                 : 66,
-    "Hawaii"               : 15,
-    "Iowa"                 : 19,
-    "Idaho"                : 16,
-    "Illinois"             : 17,
-    "Indiana"              : 18,
-    "Kansas"               : 20,
-    "Kentucky"             : 21,
-    "Louisiana"            : 22,
-    "Massachusetts"        : 25,
-    "Maryland"             : 24,
-    "Maine"                : 23,
-    "Michigan"             : 26,
-    "Minnesota"            : 27,
-    "Missouri"             : 29,
-    "Mississippi"          : 28,
-    "Montana"              : 30,
-    "North Carolina"       : 37,
-    "North Dakota"         : 38,
-    "Nebraska"             : 31,
-    "New Hampshire"        : 33,
-    "New Jersey"           : 34,
-    "New Mexico"           : 35,
-    "Nevada"               : 32,
-    "New York"             : 36,
-    "Ohio"                 : 39,
-    "Oklahoma"             : 40,
-    "Oregon"               : 41,
-    "Pennsylvania"         : 32,
-    "Puerto Rico"          : 72,
-    "Rhode Island"         : 44,
-    "South Carolina"       : 45,
-    "South Dakota"         : 46,
-    "Tennessee"            : 47,
-    "Texas"                : 48,
-    "Utah"                 : 49,
-    "Virginia"             : 51,
-    "Virgin Islands"       : 78,
-    "Vermont"              : 50,
-    "Washington"           : 53,
-    "Wisconsin"            : 55,
-    "West Virginia"        : 54,
-    "Wyoming"              : 56,
-}
 
 RB_BANDS = {
     "--All--"                 : 0,
@@ -316,7 +259,9 @@ If you think that it is valid, you can select a radio model below to force an op
             types = [(_("CHIRP Radio Images") + " (*.img)", "*.img"),
                      (_("CHIRP Files") + " (*.chirp)", "*.chirp"),
                      (_("CSV Files") + " (*.csv)", "*.csv"),
+                     (_("EVE Files (VX5)") + " (*.eve)", "*.eve"),
                      (_("ICF Files") + " (*.icf)", "*.icf"),
+                     (_("VX5 Commander Files") + " (*.vx5)", "*.vx5"),
                      (_("VX7 Commander Files") + " (*.vx7)", "*.vx7"),
                      ]
             fname = platform.get_platform().gui_open_file(types=types)
@@ -454,6 +399,9 @@ If you think that it is valid, you can select a radio model below to force an op
 
         if isinstance(eset.radio, vx7.VX7Radio):
             types += [(_("VX7 Commander") + " (*.vx7)", "vx7")]
+        elif isinstance(eset.radio, vx5.VX5Radio):
+            types += [(_("EVE") + " (*.eve)", "eve")]
+            types += [(_("VX5 Commander") + " (*.vx5)", "vx5")]
 
         while True:
             fname = platform.get_platform().gui_save_file(types=types)
@@ -680,7 +628,7 @@ If you think that it is valid, you can select a radio model below to force an op
             return False
 
         if eset.is_modified():
-            dlg = miscwidgets.YesNoDialog(title=_("Discard Changes?"),
+            dlg = miscwidgets.YesNoDialog(title=_("Save Changes?"),
                                           parent=self,
                                           buttons=(gtk.STOCK_YES, gtk.RESPONSE_YES,
                                                    gtk.STOCK_NO, gtk.RESPONSE_NO,
@@ -716,7 +664,9 @@ If you think that it is valid, you can select a radio model below to force an op
         types = [(_("CHIRP Files") + " (*.chirp)", "*.chirp"),
                  (_("CHIRP Radio Images") + " (*.img)", "*.img"),
                  (_("CSV Files") + " (*.csv)", "*.csv"),
+                 (_("EVE Files (VX5)") + " (*.eve)", "*.eve"),
                  (_("ICF Files") + " (*.icf)", "*.icf"),
+                 (_("VX5 Commander Files") + " (*.vx5)", "*.vx5"),
                  (_("VX7 Commander Files") + " (*.vx7)", "*.vx7")]
         filen = platform.get_platform().gui_open_file(types=types)
         if not filen:
@@ -739,12 +689,19 @@ If you think that it is valid, you can select a radio model below to force an op
             CONF.set_bool("has_seen_credit", True, "repeaterbook")
 
         default_state = "Oregon"
+        default_county = "--All--"
         default_band = "--All--"
         try:
             code = int(CONF.get("state", "repeaterbook"))
-            for k,v in FIPS_CODES.items():
+            for k,v in fips.FIPS_STATES.items():
                 if code == v:
                     default_state = k
+                    break
+
+            code = CONF.get("county", "repeaterbook")
+            for k,v in fips.FIPS_COUNTIES[fips.FIPS_STATES[default_state]].items():
+                if code == v:
+                    default_county = k
                     break
 
             code = int(CONF.get("band", "repeaterbook"))
@@ -755,12 +712,23 @@ If you think that it is valid, you can select a radio model below to force an op
         except:
             pass
 
-        state = miscwidgets.make_choice(sorted(FIPS_CODES.keys()),
+        state = miscwidgets.make_choice(sorted(fips.FIPS_STATES.keys()),
                                         False, default_state)
+        county = miscwidgets.make_choice(sorted(fips.FIPS_COUNTIES[fips.FIPS_STATES[default_state]].keys()),
+                                        False, default_county)
         band = miscwidgets.make_choice(sorted(RB_BANDS.keys(), key=key_bands),
                                        False, default_band)
+        def _changed(box, county):
+            state = fips.FIPS_STATES[box.get_active_text()]
+            county.get_model().clear()
+            for fips_county in sorted(fips.FIPS_COUNTIES[state].keys()):
+                county.append_text(fips_county)
+            county.set_active(0)
+        state.connect("changed", _changed, county)
+        
         d = inputdialog.FieldDialog(title="RepeaterBook Query", parent=self)
         d.add_field("State", state)
+        d.add_field("County", county)
         d.add_field("Band", band)
 
         r = d.run()
@@ -768,9 +736,11 @@ If you think that it is valid, you can select a radio model below to force an op
         if r != gtk.RESPONSE_OK:
             return False
 
-        code = FIPS_CODES[state.get_active_text()]
+        code = fips.FIPS_STATES[state.get_active_text()]
+        county_id = fips.FIPS_COUNTIES[code][county.get_active_text()]
         freq = RB_BANDS[band.get_active_text()]
         CONF.set("state", str(code), "repeaterbook")
+        CONF.set("county", str(county_id), "repeaterbook")
         CONF.set("band", str(freq), "repeaterbook")
 
         return True
@@ -787,14 +757,19 @@ If you think that it is valid, you can select a radio model below to force an op
             code = 41 # Oregon default
 
         try:
+            county = CONF.get("county", "repeaterbook")
+        except:
+            county = '%' # --All-- default
+
+        try:
             band = int(CONF.get("band", "repeaterbook"))
         except:
             band = 14 # 2m default
 
         query = "http://www.repeaterbook.com/repeaters/downloads/chirp.php?" + \
             "func=default&state_id=%02i&band=%s&freq=%%&band6=%%&loc=%%" + \
-            "&county_id=%%&status_id=%%&features=%%&coverage=%%&use=%%"
-        query = query % (code, band and band or "%%")
+            "&county_id=%s&status_id=%%&features=%%&coverage=%%&use=%%"
+        query = query % (code, band and band or "%%", county and county or "%%")
 
         # Do this in case the import process is going to take a while
         # to make sure we process events leading up to this
@@ -943,11 +918,14 @@ If you think that it is valid, you can select a radio model below to force an op
                        _("With significant contributions by:"),
                        "Marco IZ3GME",
                        "Rick WZ3RO",
+                       "Tom KD7LXL",
                        "Vernon N7OH"
                        ))
         d.set_translator_credits("Polish: Grzegorz SQ2RBY" +
                                  os.linesep +
-                                 "Italian: Fabio IZ2QDH")
+                                 "Italian: Fabio IZ2QDH" +
+                                 os.linesep +
+                                 "Dutch: Michael PD4MT")
         d.set_comments(verinfo)
         
         d.run()
@@ -1061,7 +1039,7 @@ If you think that it is valid, you can select a radio model below to force an op
         devaction.set_visible(action.get_active())
 
     def do_change_language(self):
-        langs = ["Auto", "English", "Polish", "Italian"]
+        langs = ["Auto", "English", "Polish", "Italian", "Dutch"]
         d = inputdialog.ChoiceDialog(langs, parent=self,
                                      title="Choose Language")
         d.label.set_text(_("Choose a language or Auto to use the "
