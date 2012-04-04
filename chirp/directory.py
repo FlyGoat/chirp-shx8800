@@ -85,29 +85,23 @@ def get_radio_by_image(image_file):
         rf.set_params(float(lat), float(lon), email, passwd)
         return rf
     
-    if image_file.lower().endswith(".chirp"):
-        return get_radio("Generic_XML")(image_file)
-
-    if image_file.lower().endswith(".csv"):
-        return get_radio("Generic_CSV")(image_file)
-
-    if icf.is_9x_icf(image_file):
-        return get_radio("Icom_IC91_92AD_ICF")(image_file)
-
-    if icf.is_icf_file(image_file):
+    if os.path.exists(image_file) and icf.is_icf_file(image_file):
         tempf = tempfile.mktemp()
         icf_to_image(image_file, tempf)
         print "Auto-converted %s -> %s" % (image_file, tempf)
         image_file = tempf
 
-    f = file(image_file, "rb")
-    filedata = f.read()
-    f.close()
+    if os.path.exists(image_file):
+        f = file(image_file, "rb")
+        filedata = f.read()
+        f.close()
+    else:
+        filedata = ""
 
     for radio in DRV_TO_RADIO.values():
         if not issubclass(radio, chirp_common.CloneModeRadio):
             continue
-        if radio.match_model(filedata):
+        if radio.match_model(filedata, image_file):
             return radio(image_file)
     raise errors.ImageDetectFailed("Unknown file format")
 
