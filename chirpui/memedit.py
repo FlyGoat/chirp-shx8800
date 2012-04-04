@@ -88,7 +88,7 @@ class MemoryEditor(common.Editor):
         _("ToneSql")   : 88.5,
         _("DTCS Code") : 23,
         _("DTCS Pol")  : "NN",
-        _("Cross Mode"): "DCS->Off",
+        _("Cross Mode"): "Tone->Tone",
         _("Duplex")    : "",
         _("Offset")    : 0,
         _("Mode")      : "FM",
@@ -237,7 +237,8 @@ class MemoryEditor(common.Editor):
             return
 
         iter = self.store.get_iter(path)
-        if not self.store.get(iter, self.col("_filled"))[0]:
+        if not self.store.get(iter, self.col("_filled"))[0] \
+        and self.store.get(iter, self.col(_("Frequency")))[0] == 0:
             print _("Editing new item, taking defaults")
             self.insert_new(iter)
 
