@@ -1,4 +1,5 @@
 # Copyright 2010 Dan Smith <dsmith@danplanet.com>
+# Copyright 2012 Tom Hayward <tom@tomh.us>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +18,7 @@ import os
 import tempfile
 
 from chirp import icf
-from chirp import chirp_common, util, rfinder, errors
+from chirp import chirp_common, util, rfinder, radioreference, errors
 
 def radio_class_id(cls):
     ident = "%s_%s" % (cls.VENDOR, cls.MODEL)
@@ -79,35 +80,35 @@ def icf_to_image(icf_file, img_file):
         raise Exception("Unsupported model")
 
 def get_radio_by_image(image_file):
+    if image_file.startswith("radioreference://"):
+        method, _, zipcode, username, password = image_file.split("/", 4)
+        rr = radioreference.RadioReferenceRadio(None)
+        rr.set_params(zipcode, username, password)
+        return rr
+    
     if image_file.startswith("rfinder://"):
         method, _, email, passwd, lat, lon = image_file.split("/")
         rf = rfinder.RFinderRadio(None)
         rf.set_params(float(lat), float(lon), email, passwd)
         return rf
     
-    if image_file.lower().endswith(".chirp"):
-        return get_radio("Generic_XML")(image_file)
-
-    if image_file.lower().endswith(".csv"):
-        return get_radio("Generic_CSV")(image_file)
-
-    if icf.is_9x_icf(image_file):
-        return get_radio("Icom_IC91_92AD_ICF")(image_file)
-
-    if icf.is_icf_file(image_file):
+    if os.path.exists(image_file) and icf.is_icf_file(image_file):
         tempf = tempfile.mktemp()
         icf_to_image(image_file, tempf)
         print "Auto-converted %s -> %s" % (image_file, tempf)
         image_file = tempf
 
-    f = file(image_file, "rb")
-    filedata = f.read()
-    f.close()
+    if os.path.exists(image_file):
+        f = file(image_file, "rb")
+        filedata = f.read()
+        f.close()
+    else:
+        filedata = ""
 
     for radio in DRV_TO_RADIO.values():
-        if not issubclass(radio, chirp_common.CloneModeRadio):
+        if not issubclass(radio, chirp_common.FileBackedRadio):
             continue
-        if radio.match_model(filedata):
+        if radio.match_model(filedata, image_file):
             return radio(image_file)
     raise errors.ImageDetectFailed("Unknown file format")
 
