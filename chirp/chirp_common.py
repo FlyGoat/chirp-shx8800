@@ -52,15 +52,15 @@ DTCS_CODES = [
 DTCS_EXTRA_CODES = [ 17, ]
 
 CROSS_MODES = [
-    "DCS->Off",
-    "Tone->DCS",
-    "DCS->CTCSS",
-    "Tone->CTCSS",
-    "Off->Tone",
-    "Off->DCS",
+    "Tone->Tone",
+    "Tone->DTCS",
+    "DTCS->Tone",
+    "DTCS->",
+    "->Tone",
+    "->DTCS",
 ]
 
-MODES = ["WFM", "FM", "NFM", "AM", "NAM", "DV", "USB", "LSB", "CW", "RTTY", "DIG", "PKT", "NCW", "NCWR", "CWR"]
+MODES = ["WFM", "FM", "NFM", "AM", "NAM", "DV", "USB", "LSB", "CW", "RTTY", "DIG", "PKT", "NCW", "NCWR", "CWR", "P25"]
 
 STD_6M_OFFSETS = [
     (51620000, 51980000, -500000),
@@ -204,7 +204,7 @@ class Memory:
     ctone = 88.5
     dtcs = 23
     tmode = ""
-    cross_mode = "DCS->Off"
+    cross_mode = "Tone->Tone"
     dtcs_polarity = "NN"
     skip = ""
     power = None
@@ -229,7 +229,7 @@ class Memory:
         self.ctone = 88.5                 
         self.dtcs = 23                    
         self.tmode = ""                   
-        self.cross_mode = "DCS->Off"      
+        self.cross_mode = "Tone->Tone"      
         self.dtcs_polarity = "NN"         
         self.skip = ""                    
         self.power = None                 
@@ -267,6 +267,10 @@ class Memory:
             m.__dict__[k] = v
 
         return m
+
+    def clone(self, source):
+        for k, v in source.__dict__.items():
+            self.__dict__[k] = v
 
     CSV_FORMAT = ["Location", "Name", "Frequency",
                   "Duplex", "Offset", "Tone",
@@ -604,6 +608,7 @@ class RadioFeatures:
         "has_infinite_number" : BOOLEAN,
         "has_nostep_tuning"   : BOOLEAN,
         "has_comment"         : BOOLEAN,
+        "has_settings"        : BOOLEAN,
 
         # Attributes
         "valid_modes"         : [],
@@ -701,6 +706,8 @@ class RadioFeatures:
         self.init("has_comment", False,
                   "Indicates that the radio supports storing a comment " +
                   "with each memory")
+        self.init("has_settings", False,
+                  "Indicates that the radio supports general settings")
 
         self.init("valid_modes", list(MODES),
                   "Supported emission (or receive) modes")
@@ -773,6 +780,12 @@ class Radio:
 
     def get_features(self):
         return RadioFeatures()
+
+    def get_settings(self):
+        return None
+
+    def set_settings(self, settings):
+        raise Exception("Not implemented")
 
     def _get_name_raw(*args):
         cls = args[-1]
@@ -900,27 +913,25 @@ class Radio:
 
         return msgs
 
-class CloneModeRadio(Radio):
-    """A clone-mode radio does a full memory dump in and out and we store
-    an image of the radio into an image file"""
+    def get_settings(self):
+        """Returns a RadioSettingGroup containing one or more
+        RadioSettingGroup or RadioSetting objects. These represent general
+        setting knobs and dials that can be adjusted on the radio. If this
+        function is implemented, the has_settings RadioFeatures flag should
+        be True and set_settings() must be implemented as well."""
+        pass
 
-    _memsize = 0
+    def set_settings(self, settings):
+        """Accepts the top-level RadioSettingGroup returned from get_settings()
+        and adjusts the values in the radio accordingly. This function expects
+        the entire RadioSettingGroup hierarchy returned from get_settings().
+        If this function is implemented, the has_settings RadioFeatures flag
+        should be True and get_settings() must be implemented as well."""
+        pass
 
+class FileBackedRadio(Radio):
+    """A file-backed radio stores its data in a file"""
     FILE_EXTENSION = "img"
-
-    def __init__(self, pipe):
-        self.errors = []
-        self._mmap = None
-
-        if isinstance(pipe, str):
-            self.pipe = None
-            self.load_mmap(pipe)
-        elif isinstance(pipe, memmap.MemoryMap):
-            self.pipe = None
-            self._mmap = pipe
-            self.process_mmap()
-        else:
-            Radio.__init__(self, pipe)
 
     def save(self, filename):
         self.save_mmap(filename)
@@ -949,22 +960,14 @@ class CloneModeRadio(Radio):
         except IOError,e:
             raise Exception("File Access Error")
 
-    def sync_in(self):
-        "Initiate a radio-to-PC clone operation"
-        pass
-
-    def sync_out(self):
-        "Initiate a PC-to-radio clone operation"
-        pass
+    def get_mmap(self):
+        return self._mmap
 
     def get_memsize(self):
         return self._memsize
 
-    def get_mmap(self):
-        return self._mmap
-
     @classmethod
-    def match_model(cls, filedata):
+    def match_model(cls, filedata, filename):
         """Given contents of a stored file (@filedata), return True if 
         this radio driver handles the represented model"""
 
@@ -975,8 +978,41 @@ class CloneModeRadio(Radio):
         # memories of the same size.
         return len(filedata) == cls._memsize
 
+
+class CloneModeRadio(FileBackedRadio):
+    """A clone-mode radio does a full memory dump in and out and we store
+    an image of the radio into an image file"""
+
+    _memsize = 0
+
+    def __init__(self, pipe):
+        self.errors = []
+        self._mmap = None
+
+        if isinstance(pipe, str):
+            self.pipe = None
+            self.load_mmap(pipe)
+        elif isinstance(pipe, memmap.MemoryMap):
+            self.pipe = None
+            self._mmap = pipe
+            self.process_mmap()
+        else:
+            Radio.__init__(self, pipe)
+
+    def sync_in(self):
+        "Initiate a radio-to-PC clone operation"
+        pass
+
+    def sync_out(self):
+        "Initiate a PC-to-radio clone operation"
+        pass
+
 class LiveRadio(Radio):
     pass
+
+class NetworkSourceRadio(Radio):
+    def do_fetch(self):
+        pass
 
 class IcomDstarSupport:
     MYCALL_LIMIT = (1, 1)

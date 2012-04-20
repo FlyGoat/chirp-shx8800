@@ -213,11 +213,11 @@ class arrayDataElement(DataElement):
 
     def set_value(self, value):
         if isinstance(self.__items[0], bbcdDataElement):
-            self.__set_value_bbcd(value)
+            self.__set_value_bbcd(int(value))
         elif isinstance(self.__items[0], lbcdDataElement):
-            self.__set_value_lbcd(value)
+            self.__set_value_lbcd(int(value))
         elif isinstance(self.__items[0], charDataElement):
-            self.__set_value_char(value)
+            self.__set_value_char(str(value))
         elif len(value) != len(self.__items):
             raise ValueError("Array cardinality mismatch")
         else:
@@ -365,7 +365,7 @@ class u8DataElement(intDataElement):
         return ord(data)
 
     def set_value(self, value):
-        self._data[self._offset] = (value & 0xFF)
+        self._data[self._offset] = (int(value) & 0xFF)
 
 class u16DataElement(intDataElement):
     _size = 2
@@ -376,7 +376,7 @@ class u16DataElement(intDataElement):
 
     def set_value(self, value):
         self._data[self._offset] = struct.pack(self._endianess + "H",
-                                               value & 0xFFFF)
+                                               int(value) & 0xFFFF)
 
 class ul16DataElement(u16DataElement):
     _endianess = "<"
@@ -388,7 +388,8 @@ class u24DataElement(intDataElement):
         return struct.unpack(">I", "\x00" + data)[0]
 
     def set_value(self, value):
-        self._data[self._offset] = struct.pack(">I", value & 0xFFFFFFFF)[1:]
+        self._data[self._offset] = struct.pack(">I",
+                                               int(value) & 0xFFFFFFFF)[1:]
 
 class u32DataElement(intDataElement):
     _size = 4
@@ -399,7 +400,7 @@ class u32DataElement(intDataElement):
 
     def set_value(self, value):
         self._data[self._offset] = struct.pack(self._endianess + "I",
-                                               value & 0xFFFFFFFF)
+                                               int(value) & 0xFFFFFFFF)
 
 class ul32DataElement(u32DataElement):
     _endianess = "<"
@@ -407,18 +408,28 @@ class ul32DataElement(u32DataElement):
 class charDataElement(DataElement):
     _size = 1
 
+    def __str__(self):
+        return str(self.get_value())
+
+    def __int__(self):
+        return ord(self.get_value())
+
     def _get_value(self, data):
         return data
 
     def set_value(self, value):
-        self._data[self._offset] = value
+        self._data[self._offset] = str(value)
 
 class bcdDataElement(DataElement):
+    def __int__(self):
+        tens, ones = self.get_value()
+        return (tens * 10) + ones
+
     def set_bits(self, mask):
-        self._data[self._offset] = ord(self._data[self._offset]) | mask
+        self._data[self._offset] = ord(self._data[self._offset]) | int(mask)
 
     def clr_bits(self, mask):
-        self._data[self._offset] = ord(self._data[self._offset]) & ~mask
+        self._data[self._offset] = ord(self._data[self._offset]) & ~int(mask)
 
 class lbcdDataElement(bcdDataElement):
     _size = 1
@@ -474,7 +485,7 @@ class bitDataElement(intDataElement):
         #print "mask: %04x" % mask
         #print "valu: %04x" % value
 
-        value = ((value << (self._shift-self._nbits)) & mask) | data
+        value = ((int(value) << (self._shift-self._nbits)) & mask) | data
         self._subgen(self._data, self._offset).set_value(value)
         
     def size(self):
@@ -579,6 +590,7 @@ class Processor:
         self._data = data
         self._offset = offset
         self._obj = None
+        self._user_types = {}
 
     def do_symbol(self, symdef, gen):
         name = symdef[1]
@@ -636,14 +648,17 @@ class Processor:
             else:
                 self._generators[name] = res
 
-    def parse_struct(self, struct):
+    def parse_struct_decl(self, struct):
         block = struct[:-1]
+        if block[0][0] == "symbol":
+            # This is a pre-defined struct
+            block = self._user_types[block[0][1]]
         deftype = struct[-1]
         if deftype[0] == "array":
             name = deftype[1][0][1]
             count = int(deftype[1][1][1])
         elif deftype[0] == "symbol":
-            name = deftype[0][1]
+            name = deftype[1]
             count = 1
 
         result = arrayDataElement(self._offset)
@@ -660,6 +675,19 @@ class Processor:
             self._generators[name] = result[0]
         else:
             self._generators[name] = result
+
+    def parse_struct_defn(self, struct):
+        name = struct[0][1]
+        block = struct[1:]
+        self._user_types[name] = block
+
+    def parse_struct(self, struct):
+        if struct[0][0] == "struct_defn":
+            return self.parse_struct_defn(struct[0][1])
+        elif struct [0][0] == "struct_decl":
+            return self.parse_struct_decl(struct[0][1])
+        else:
+            raise Exception("Internal error: What is `%s'?" % struct[0][0])
 
     def parse_directive(self, directive):
         name = directive[0][0]
@@ -702,6 +730,8 @@ def parse(spec, data, offset=0):
 
 if __name__ == "__main__":
     defn = """
+struct mytype { u8 foo; };
+struct mytype bar;
 struct {
   u8 foo;
   u8 highbit:1,
@@ -709,10 +739,12 @@ struct {
      lowbit:1;
   char string[3];
   bbcd fourdigits[2];
-} mystruct[1];
+} mystruct;
 """
-    data = "\x7F\x81abc\x12\x34"
+    data = "\xab\x7F\x81abc\x12\x34"
     tree = parse(defn, data)
+
+    print repr(tree)
 
     print "Foo %i" % tree.mystruct.foo
     print "Highbit: %i SixZeros: %i: Lowbit: %i" % (tree.mystruct.highbit,
