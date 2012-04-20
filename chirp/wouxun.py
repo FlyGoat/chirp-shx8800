@@ -122,14 +122,24 @@ def do_upload(radio, start, end, blocksize):
             radio.status_fn(s)
 
 def wouxun_download(radio):
-    wouxun_identify(radio)
-    wouxun_start_transfer(radio)
-    return do_download(radio, 0x0000, 0x2000, 0x0040)
+    try:
+        wouxun_identify(radio)
+        wouxun_start_transfer(radio)
+        return do_download(radio, 0x0000, 0x2000, 0x0040)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 def wouxun_upload(radio):
-    wouxun_identify(radio)
-    wouxun_start_transfer(radio)
-    return do_upload(radio, 0x0000, 0x2000, 0x0010)
+    try:
+        wouxun_identify(radio)
+        wouxun_start_transfer(radio)
+        return do_upload(radio, 0x0000, 0x2000, 0x0010)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 CHARSET = list("0123456789") + [chr(x + ord("A")) for x in range(0, 26)] + \
     list("?+ ")
@@ -166,14 +176,15 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
 
     def get_features(self):
         rf = chirp_common.RadioFeatures()
-        rf.valid_tmodes = ["", "Tone", "TSQL", "DTCS"]
+        rf.valid_tmodes = ["", "Tone", "TSQL", "DTCS", "Cross"]
         rf.valid_modes = ["FM", "NFM"]
         rf.valid_power_levels = POWER_LEVELS
         rf.valid_bands = [(136000000, 174000000), (216000000, 520000000)]
         rf.valid_characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         rf.valid_name_length = 6
         rf.valid_duplexes = ["", "+", "-", "split"]
-        rf.has_ctone = False
+        rf.has_ctone = True
+        rf.has_cross = True
         rf.has_tuning_step = False
         rf.has_bank = False
         rf.memory_bounds = (1, 128)
@@ -182,6 +193,49 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
 
     def get_raw_memory(self, number):
         return repr(self._memobj.memory[number - 1])
+
+    def get_tone(self, _mem, mem):
+        def get_dcs(val):
+            code = int("%03o" % (val & 0x07FF))
+            pol = (val & 0x8000) and "R" or "N"
+            return code, pol
+            
+        if _mem.tx_tone != 0xFFFF and _mem.tx_tone > 0x2800:
+            tcode, tpol = get_dcs(_mem.tx_tone)
+            mem.dtcs = tcode
+            txmode = "DTCS"
+        elif _mem.tx_tone != 0xFFFF:
+            mem.rtone = _mem.tx_tone / 10.0
+            txmode = "Tone"
+        else:
+            txmode = ""
+
+        if _mem.rx_tone != 0xFFFF and _mem.rx_tone > 0x2800:
+            rcode, rpol = get_dcs(_mem.rx_tone)
+            mem.dtcs = rcode
+            rxmode = "DTCS"
+        elif _mem.rx_tone != 0xFFFF:
+            mem.ctone = _mem.rx_tone / 10.0
+            rxmode = "Tone"
+        else:
+            rxmode = ""
+
+        if txmode == "Tone" and not rxmode:
+            mem.tmode = "Tone"
+        elif txmode == rxmode and txmode == "Tone" and mem.rtone == mem.ctone:
+            mem.tmode = "TSQL"
+        elif txmode == rxmode and txmode == "DTCS":
+            mem.tmode = "DTCS"
+        elif rxmode or txmode:
+            mem.tmode = "Cross"
+            mem.cross_mode = "%s->%s" % (txmode, rxmode)
+
+        if mem.tmode == "DTCS":
+            mem.dtcs_polarity = "%s%s" % (tpol, rpol)
+
+        if DEBUG:
+            print "Got TX %s (%i) RX %s (%i)" % (txmode, _mem.tx_tone,
+                                                 rxmode, _mem.rx_tone)
 
     def get_memory(self, number):
         _mem = self._memobj.memory[number - 1]
@@ -214,22 +268,7 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
         if not _mem.iswide:
             mem.mode = "NFM"
 
-        def get_dcs(val):
-            code = int("%03o" % (val & 0x07FF))
-            pol = (val & 0x8000) and "R" or "N"
-            return code, pol
-            
-        if _mem.tx_tone == 0xFFFF or _mem.tx_tone == 0x0000:
-            pass # No tone
-        elif _mem.tx_tone > 0x2800 and _mem.rx_tone > 0x2800:
-            tcode, tpol = get_dcs(_mem.tx_tone)
-            rcode, rpol = get_dcs(_mem.rx_tone)
-            mem.dtcs = tcode
-            mem.tmode = "DTCS"
-            mem.dtcs_polarity = "%s%s" % (tpol, rpol)
-        else:
-            mem.rtone = _mem.tx_tone / 10.0
-            mem.tmode = _mem.tx_tone == _mem.rx_tone and "TSQL" or "Tone"
+        self.get_tone(_mem, mem)
 
         mem.power = POWER_LEVELS[not _mem.power_high]
 
@@ -242,6 +281,41 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
 
     def wipe_memory(self, _mem, byte):
         _mem.set_raw(byte * (_mem.size() / 8))
+
+    def set_tone(self, mem, _mem):
+        def set_dcs(code, pol):
+            val = int("%i" % code, 8) + 0x2800
+            if pol == "R":
+                val += 0xA000
+            return val
+
+        if mem.tmode == "Cross":
+            tx_mode, rx_mode = mem.cross_mode.split("->")
+        elif mem.tmode == "Tone":
+            tx_mode = mem.tmode
+            rx_mode = None
+        else:
+            tx_mode = rx_mode = mem.tmode
+
+
+        if tx_mode == "DTCS":
+            _mem.tx_tone = set_dcs(mem.dtcs, mem.dtcs_polarity[0])
+        elif tx_mode:
+            _mem.tx_tone = tx_mode == "Tone" and \
+                int(mem.rtone * 10) or int(mem.ctone * 10)
+        else:
+            _mem.tx_tone = 0xFFFF
+
+        if rx_mode == "DTCS":
+            _mem.rx_tone = set_dcs(mem.dtcs, mem.dtcs_polarity[1])
+        elif rx_mode:
+            _mem.rx_tone = int(mem.ctone * 10)
+        else:
+            _mem.rx_tone = 0xFFFF
+
+        if DEBUG:
+            print "Set TX %s (%i) RX %s (%i)" % (tx_mode, _mem.tx_tone,
+                                                 rx_mode, _mem.rx_tone)
 
     def set_memory(self, mem):
         _mem = self._memobj.memory[mem.number - 1]
@@ -267,21 +341,7 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
         _mem.skip = mem.skip != "S"
         _mem.iswide = mem.mode != "NFM"
 
-        def set_dcs(code, pol):
-            val = int("%i" % code, 8) + 0x2800
-            if pol == "R":
-                val += 0xA000
-            return val
-
-        if mem.tmode == "DTCS":
-            _mem.tx_tone = set_dcs(mem.dtcs, mem.dtcs_polarity[0])
-            _mem.rx_tone = set_dcs(mem.dtcs, mem.dtcs_polarity[1])
-        elif mem.tmode:
-            _mem.tx_tone = int(mem.rtone * 10)
-            _mem.rx_tone = mem.tmode == "TSQL" and _mem.tx_tone or 0xFFFF
-        else:
-            _mem.rx_tone = 0xFFFF
-            _mem.tx_tone = 0xFFFF
+        self.set_tone(mem, _mem)
 
         if mem.power:
             _mem.power_high = not POWER_LEVELS.index(mem.power)
@@ -299,7 +359,7 @@ class KGUVD1PRadio(chirp_common.CloneModeRadio):
                 raise Exception("Character `%s' not supported")
 
     @classmethod
-    def match_model(cls, filedata):
+    def match_model(cls, filedata, filename):
         # New-style image (CHIRP 0.1.12)
         if len(filedata) == 8192 and filedata[0x60:0x64] != "2009":
             return True
@@ -335,12 +395,22 @@ def puxing_prep(radio):
     raise e
 
 def puxing_download(radio):
-    puxing_prep(radio)
-    return do_download(radio, 0x0000, 0x0C60, 0x0008)
+    try:
+        puxing_prep(radio)
+        return do_download(radio, 0x0000, 0x0C60, 0x0008)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 def puxing_upload(radio):
-    puxing_prep(radio)
-    return do_upload(radio, 0x0000, 0x0C40, 0x0008)
+    try:
+        puxing_prep(radio)
+        return do_upload(radio, 0x0000, 0x0C40, 0x0008)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 puxing_mem_format = """
 #seekto 0x0000;
@@ -446,7 +516,7 @@ class Puxing777Radio(KGUVD1PRadio):
         self._memobj = bitwise.parse(puxing_mem_format, self._mmap)
 
     @classmethod
-    def match_model(cls, filedata):
+    def match_model(cls, filedata, filename):
         if len(filedata) > 0x080B and \
                 ord(filedata[0x080B]) != PUXING_MODELS[777]:
             return False
@@ -607,12 +677,22 @@ def puxing_2r_prep(radio):
     print "Radio ident: %s (%i)" % (repr(ident), len(ident))
 
 def puxing_2r_download(radio):
-    puxing_2r_prep(radio)
-    return do_download(radio, 0x0000, 0x0FE0, 0x0010)
+    try:
+        puxing_2r_prep(radio)
+        return do_download(radio, 0x0000, 0x0FE0, 0x0010)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 def puxing_2r_upload(radio):
-    puxing_2r_prep(radio)
-    return do_upload(radio, 0x0000, 0x0FE0, 0x0010)
+    try:
+        puxing_2r_prep(radio)
+        return do_upload(radio, 0x0000, 0x0FE0, 0x0010)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 puxing_2r_mem_format = """
 #seekto 0x0010;
@@ -661,7 +741,7 @@ class Puxing2RRadio(KGUVD1PRadio):
         return rf
 
     @classmethod
-    def match_model(cls, filedata):
+    def match_model(cls, filedata, filename):
         return (len(filedata) == cls._memsize) and \
             filedata[-16:] != "IcomCloneFormat3"
 
@@ -774,12 +854,22 @@ def uv3r_prep(radio):
     raise e
 
 def uv3r_download(radio):
-    uv3r_prep(radio)
-    return do_download(radio, 0x0000, 0x0E40, 0x0010)
+    try:
+        uv3r_prep(radio)
+        return do_download(radio, 0x0000, 0x0E40, 0x0010)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 def uv3r_upload(radio):
-    uv3r_prep(radio)
-    return do_upload(radio, 0x0000, 0x0E40, 0x0010)
+    try:
+        uv3r_prep(radio)
+        return do_upload(radio, 0x0000, 0x0E40, 0x0010)
+    except errors.RadioError:
+        raise
+    except Exception, e:
+        raise errors.RadioError("Failed to communicate with radio: %s" % e)
 
 uv3r_mem_format = """
 #seekto 0x0010;
@@ -835,13 +925,16 @@ class UV3RRadio(KGUVD1PRadio):
 
     def get_features(self):
         rf = chirp_common.RadioFeatures()
-        rf.valid_tmodes = ["", "Tone", "TSQL", "DTCS"]
+        rf.valid_tmodes = ["", "Tone", "TSQL", "DTCS", "Cross"]
         rf.valid_modes = ["FM", "NFM"]
         rf.valid_power_levels = UV3R_POWER_LEVELS
         rf.valid_bands = [(136000000, 174000000), (400000000, 470000000)]
         rf.valid_skips = []
         rf.valid_duplexes = ["", "-", "+", "split"]
-        rf.has_ctone = False
+        rf.valid_cross_modes = ["Tone->Tone", "Tone->DTCS", "DTCS->Tone",
+                                "->Tone", "->DTCS"]
+        rf.has_ctone = True
+        rf.has_cross = True
         rf.has_tuning_step = False
         rf.has_bank = False
         rf.has_name = False
@@ -882,22 +975,55 @@ class UV3RRadio(KGUVD1PRadio):
             mem.mode = "NFM"
 
         dtcspol = (int(_mem.dtcsinvt) << 1) + _mem.dtcsinvr
+        mem.dtcs_polarity = UV3R_DTCS_POL[dtcspol]
 
-        if _mem.txtone == 0 or _mem.txtone == 0xFF:
-            mem.tmode = ""
+        if _mem.txtone in [0, 0xFF]:
+            txmode = ""
         elif _mem.txtone < 0x33:
             mem.rtone = chirp_common.TONES[_mem.txtone - 1]
-            mem.tmode = _mem.txtone == _mem.rxtone and "TSQL" or "Tone"
+            txmode = "Tone"
         elif _mem.txtone >= 0x33:
-            mem.dtcs = chirp_common.DTCS_CODES[_mem.txtone - 0x33]
+            tcode = chirp_common.DTCS_CODES[_mem.txtone - 0x33]
+            mem.dtcs = tcode
+            txmode = "DTCS"
+        else:
+            print "Bug: tx_mode is %02x" % _mem.txtone
+
+        if _mem.rxtone in [0, 0xFF]:
+            rxmode = ""
+        elif _mem.rxtone < 0x33:
+            mem.ctone = chirp_common.TONES[_mem.rxtone - 1]
+            rxmode = "Tone"
+        elif _mem.rxtone >= 0x33:
+            rcode = chirp_common.DTCS_CODES[_mem.rxtone - 0x33]
+            mem.dtcs = rcode
+            rxmode = "DTCS"
+        else:
+            print "Bug: rx_mode is %02x" % _mem.rxtone
+
+        if txmode == "Tone" and not rxmode:
+            mem.tmode = "Tone"
+        elif txmode == rxmode and txmode == "Tone" and mem.rtone == mem.ctone:
+            mem.tmode = "TSQL"
+        elif txmode == rxmode and txmode == "DTCS":
             mem.tmode = "DTCS"
-            mem.dtcs_polarity = UV3R_DTCS_POL[dtcspol]
-        elif _mem.rxtone >= 0x33 and _mem.rxtone != 0xFF:
-            mem.dtcs = chirp_common.DTCS_CODES[_mem.rxtone - 0x33]
-            mem.tmode = "DTCS"
-            mem.dtcs_polarity = UV3R_DTCS_POL[dtcspol]
+        elif rxmode or txmode:
+            mem.tmode = "Cross"
+            mem.cross_mode = "%s->%s" % (txmode, rxmode)
 
         return mem
+
+    def _set_tone(self, _mem, which, value, mode):
+        if mode == "Tone":
+            val = chirp_common.TONES.index(value) + 1
+        elif mode == "DTCS":
+            val = chirp_common.DTCS_CODES.index(value) + 0x33
+        elif mode == "":
+            val = 0
+        else:
+            raise errors.RadioError("Internal error: tmode %s" % mode)
+
+        setattr(_mem, which, val)
 
     def _set_memory(self, mem, _mem):
         if mem.empty:
@@ -919,17 +1045,34 @@ class UV3RRadio(KGUVD1PRadio):
         _mem.ishighpower = mem.power == UV3R_POWER_LEVELS[0]
         _mem.iswide = mem.mode == "FM"
 
+        _mem.dtcsinvt = mem.dtcs_polarity[0] == "R"
+        _mem.dtcsinvr = mem.dtcs_polarity[1] == "R"
+
+        rxtone = txtone = 0
+        rxmode = txmode = ""
+
         if mem.tmode == "DTCS":
-            _mem.rxtone = chirp_common.DTCS_CODES.index(mem.dtcs) + 0x33
-            _mem.txtone = _mem.rxtone
-            _mem.dtcsinvt = mem.dtcs_polarity[0] == "R"
-            _mem.dtcsinvr = mem.dtcs_polarity[1] == "R"
-        elif mem.tmode:
-            _mem.txtone = chirp_common.TONES.index(mem.rtone) + 1
-            _mem.rxtone = mem.tmode == "TSQL" and _mem.txtone or 0
-        else:
-            _mem.txtone = 0
-            _mem.rxtone = 0
+            rxmode = txmode = "DTCS"
+            rxtone = txtone = mem.dtcs
+        elif mem.tmode and mem.tmode != "Cross":
+            rxtone = txtone = mem.tmode == "Tone" and mem.rtone or mem.ctone
+            txmode = "Tone"
+            rxmode = mem.tmode == "TSQL" and "Tone" or ""
+        elif mem.tmode == "Cross":
+            txmode, rxmode = mem.cross_mode.split("->", 1)
+
+            if txmode == "DTCS":
+                txtone = mem.dtcs
+            elif txmode == "Tone":
+                txtone = mem.rtone
+
+            if rxmode == "DTCS":
+                rxtone = mem.dtcs
+            elif rxmode == "Tone":
+                rxtone = mem.ctone
+
+        self._set_tone(_mem, "txtone", txtone, txmode)
+        self._set_tone(_mem, "rxtone", rxtone, rxmode)
 
     def set_memory(self, mem):
         _tmem = self._memobj.tx_memory[mem.number - 1]
@@ -939,7 +1082,7 @@ class UV3RRadio(KGUVD1PRadio):
         self._set_memory(mem, _rmem)
 
     @classmethod
-    def match_model(cls, filedata):
+    def match_model(cls, filedata, filename):
         return len(filedata) == 3648
 
     def get_raw_memory(self, number):

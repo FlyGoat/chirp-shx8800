@@ -22,7 +22,7 @@ class OmittedHeaderError(Exception):
     pass
 
 @directory.register
-class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
+class CSVRadio(chirp_common.FileBackedRadio, chirp_common.IcomDstarSupport):
     VENDOR = "Generic"
     MODEL = "CSV"
     FILE_EXTENSION = "csv"
@@ -57,7 +57,7 @@ class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
             self.memories.append(m)
 
     def __init__(self, pipe):
-        chirp_common.CloneModeRadio.__init__(self, None)
+        chirp_common.FileBackedRadio.__init__(self, None)
 
         self._filename = pipe
         if self._filename and os.path.exists(self._filename):
@@ -166,7 +166,7 @@ class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
                 self.errors.append("Line %i: %s" % (lineno, e))
                 continue
 
-            self.__grow(mem.number)
+            self._grow(mem.number)
             self.memories[mem.number] = mem
             good += 1
 
@@ -212,7 +212,7 @@ class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
         except:
             raise errors.InvalidMemoryLocation("No such memory %s" % number)
 
-    def __grow(self, target):
+    def _grow(self, target):
         delta = target - len(self.memories)
         if delta < 0:
             return
@@ -226,7 +226,7 @@ class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
             self.memories.append(m)
 
     def set_memory(self, newmem):
-        self.__grow(newmem.number)
+        self._grow(newmem.number)
         self.memories[newmem.number] = newmem
 
     def erase_memory(self, number):
@@ -239,3 +239,7 @@ class CSVRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
         return ",".join(chirp_common.Memory.CSV_FORMAT) + \
             os.linesep + \
             ",".join(self.memories[number].to_csv())
+
+    @classmethod
+    def match_model(cls, filedata, filename):
+        return filename.lower().endswith("." + cls.FILE_EXTENSION)
