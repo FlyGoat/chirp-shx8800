@@ -17,9 +17,9 @@ import os
 import gtk
 import gobject
 
-from chirp import chirp_common, directory, generic_csv, xml
+from chirp import chirp_common, directory, generic_csv, generic_xml
 from chirpui import memedit, dstaredit, bankedit, common, importdialog
-from chirpui import inputdialog, reporting
+from chirpui import inputdialog, reporting, settingsedit
 
 class EditorSet(gtk.VBox):
     __gsignals__ = {
@@ -64,6 +64,7 @@ class EditorSet(gtk.VBox):
             "dstar"        : None,
             "bank_names"   : None,
             "bank_members" : None,
+            "settings"     : None,
             }
 
         if isinstance(self.radio, chirp_common.IcomDstarSupport):
@@ -83,6 +84,9 @@ class EditorSet(gtk.VBox):
         
         if rf.has_bank_names:
             self.editors["bank_names"] = bankedit.BankNameEditor(self.rthread)
+
+        if rf.has_settings:
+            self.editors["settings"] = settingsedit.SettingsEditor(self.rthread)
 
         lab = gtk.Label(_("Memories"))
         self.tabs.append_page(self.editors["memedit"].root, lab)
@@ -105,6 +109,11 @@ class EditorSet(gtk.VBox):
             self.tabs.append_page(self.editors["bank_members"].root, lab)
             self.editors["bank_members"].root.show()
             self.editors["bank_members"].connect("changed", self.banks_changed)
+
+        if self.editors["settings"]:
+            lab = gtk.Label(_("Settings"))
+            self.tabs.append_page(self.editors["settings"].root, lab)
+            self.editors["settings"].root.show()
 
         self.pack_start(self.tabs)
         self.tabs.show()
@@ -152,7 +161,11 @@ class EditorSet(gtk.VBox):
             self.filename = fname
 
         self.rthread.lock()
-        self.radio.save(fname)
+        try:
+            self.radio.save(fname)
+        except:
+            self.rthread.unlock()
+            raise
         self.rthread.unlock()
 
         self.modified = False
@@ -238,6 +251,25 @@ class EditorSet(gtk.VBox):
     def do_import(self, filen):
         try:
             src_radio = directory.get_radio_by_image(filen)
+        except Exception, e:
+            common.show_error(e)
+            return
+
+        if isinstance(src_radio, chirp_common.NetworkSourceRadio):
+            ww = importdialog.WaitWindow("Querying...", self.parent_window)
+            ww.show()
+            def status(status):
+                ww.set(float(status.cur) / float(status.max))
+            try:
+                src_radio.status_fn = status
+                src_radio.do_fetch()
+            except Exception, e:
+                common.show_error(e)
+                ww.hide()
+                return
+            ww.hide()
+
+        try:
             if src_radio.get_features().has_sub_devices:
                 src_radio = self.choose_sub_device(src_radio)
         except Exception, e:
@@ -266,7 +298,7 @@ class EditorSet(gtk.VBox):
             if filen.lower().endswith(".csv"):
                 dst_radio = generic_csv.CSVRadio(filen)
             elif filen.lower().endswith(".chirp"):
-                dst_radio = xml.XMLRadio(filen)
+                dst_radio = generic_xml.XMLRadio(filen)
             else:
                 raise Exception(_("Unsupported file type"))
         except Exception, e:
@@ -325,6 +357,9 @@ class EditorSet(gtk.VBox):
 
     def set_read_only(self, read_only=True):
         self.editors["memedit"].set_read_only(read_only)
+    
+    def get_read_only(self):
+        return self.editors["memedit"].get_read_only()
 
     def prepare_close(self):
         self.editors["memedit"].prepare_close()
