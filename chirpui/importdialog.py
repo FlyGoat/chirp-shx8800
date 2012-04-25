@@ -17,7 +17,7 @@ import gtk
 import gobject
 import pango
 
-from chirp import errors, chirp_common, xml, import_logic
+from chirp import errors, chirp_common, generic_xml, import_logic
 from chirpui import common
 
 class WaitWindow(gtk.Window):
@@ -225,7 +225,7 @@ class ImportDialog(gtk.Dialog):
             print "One or more of the radios doesn't support banks"
             return
 
-        if not isinstance(self.dst_radio, xml.XMLRadio) and \
+        if not isinstance(self.dst_radio, generic_xml.XMLRadio) and \
                 len(dst_banks) != len(src_banks):
             print "Source and destination radios have a different number of banks"
         else:
@@ -403,6 +403,18 @@ class ImportDialog(gtk.Dialog):
     def make_adjust(self):
         hbox = gtk.HBox(True, 2)
 
+        incr = gtk.Button("+100")
+        incr.connect("clicked", self.__incrnew, 100)
+        incr.set_size_request(50, 25)
+        incr.show()
+        hbox.pack_start(incr, 0, 0, 0)
+
+        incr = gtk.Button("+10")
+        incr.connect("clicked", self.__incrnew, 10)
+        incr.set_size_request(50, 25)
+        incr.show()
+        hbox.pack_start(incr, 0, 0, 0)
+
         incr = gtk.Button("+1")
         incr.connect("clicked", self.__incrnew, 1)
         incr.set_size_request(50, 25)
@@ -411,6 +423,18 @@ class ImportDialog(gtk.Dialog):
 
         decr = gtk.Button("-1")
         decr.connect("clicked", self.__incrnew, -1)
+        decr.set_size_request(50, 25)
+        decr.show()
+        hbox.pack_start(decr, 0, 0, 0)
+
+        decr = gtk.Button("-10")
+        decr.connect("clicked", self.__incrnew, -10)
+        decr.set_size_request(50, 25)
+        decr.show()
+        hbox.pack_start(decr, 0, 0, 0)
+
+        decr = gtk.Button("-100")
+        decr.connect("clicked", self.__incrnew, -100)
         decr.set_size_request(50, 25)
         decr.show()
         hbox.pack_start(decr, 0, 0, 0)
@@ -451,7 +475,7 @@ class ImportDialog(gtk.Dialog):
         return frame
 
     def make_controls(self):
-        hbox = gtk.HBox(True, 2)
+        hbox = gtk.HBox(False, 2)
         
         hbox.pack_start(self.make_select(), 0, 0, 0)
         hbox.pack_start(self.make_adjust(), 0, 0, 0)

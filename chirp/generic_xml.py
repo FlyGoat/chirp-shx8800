@@ -62,13 +62,13 @@ def default_banks():
     return banks
 
 @directory.register
-class XMLRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
+class XMLRadio(chirp_common.FileBackedRadio, chirp_common.IcomDstarSupport):
     VENDOR = "Generic"
     MODEL = "XML"
     FILE_EXTENSION = "chirp"
 
     def __init__(self, pipe):
-        chirp_common.CloneModeRadio.__init__(self, None)
+        chirp_common.FileBackedRadio.__init__(self, None)
         self._filename = pipe
         if self._filename and os.path.exists(self._filename):
             self.doc = libxml2.parseFile(self._filename)
@@ -133,6 +133,10 @@ class XMLRadio(chirp_common.CloneModeRadio, chirp_common.IcomDstarSupport):
 
     def erase_memory(self, number):
         xml_ll.del_memory(self.doc, number)
+
+    @classmethod
+    def match_model(cls, filedata, filename):
+        return filename.lower().endswith("." + cls.FILE_EXTENSION)
 
 if __name__ == "__main__":
     r = XMLRadio("testmem.chirp")

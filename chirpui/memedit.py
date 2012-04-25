@@ -88,7 +88,7 @@ class MemoryEditor(common.Editor):
         _("ToneSql")   : 88.5,
         _("DTCS Code") : 23,
         _("DTCS Pol")  : "NN",
-        _("Cross Mode"): "DCS->Off",
+        _("Cross Mode"): "Tone->Tone",
         _("Duplex")    : "",
         _("Offset")    : 0,
         _("Mode")      : "FM",
@@ -234,7 +234,8 @@ class MemoryEditor(common.Editor):
             return
 
         iter = self.store.get_iter(path)
-        if not self.store.get(iter, self.col("_filled"))[0]:
+        if not self.store.get(iter, self.col("_filled"))[0] \
+        and self.store.get(iter, self.col(_("Frequency")))[0] == 0:
             print _("Editing new item, taking defaults")
             self.insert_new(iter)
 
@@ -946,7 +947,7 @@ class MemoryEditor(common.Editor):
     def _limit_key(self, which):
         if which not in ["lo", "hi"]:
             raise Exception(_("Internal Error: Invalid limit {number").format(number=which))
-        return "%s_%s" % (directory.get_driver(self.rthread.radio.__class__),
+        return "%s_%s" % (directory.radio_class_id(self.rthread.radio.__class__),
                           which)
 
     def _store_limit(self, sb, which):
@@ -1036,6 +1037,9 @@ class MemoryEditor(common.Editor):
     def set_read_only(self, read_only):
         self.read_only = read_only
 
+    def get_read_only(self):
+        return self.read_only
+
     def set_hide_unused(self, hide_unused):
         self.hide_unused = hide_unused
         self.prefill()
@@ -1084,7 +1088,7 @@ class MemoryEditor(common.Editor):
 
     def set_columns_visible(self):
         unsupported = self.get_unsupported_columns()
-        driver = directory.get_driver(self.rthread.radio.__class__)
+        driver = directory.radio_class_id(self.rthread.radio.__class__)
         user_visible = self._config.get(driver, "memedit_columns")
         if user_visible:
             user_visible = user_visible.split(",")
