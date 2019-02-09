@@ -219,6 +219,12 @@ class RadioSettingValueString(RadioSettingValue):
     def __str__(self):
         return self._current
 
+    def __len__(self):
+        return len(self._current)
+
+    def __getitem__(self, i):
+        return self._current[i]
+
 
 class RadioSettingValueMap(RadioSettingValueList):
 
@@ -354,6 +360,9 @@ class RadioSettingGroup(object):
                 return self
 
             def next(self):
+                return self.__next__()
+
+            def __next__(self):
                 """Next Iterator Interface"""
                 if self.__i >= len(self.__rsg.keys()):
                     raise StopIteration()

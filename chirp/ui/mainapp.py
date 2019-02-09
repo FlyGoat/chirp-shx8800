@@ -28,8 +28,9 @@ import gobject
 import sys
 
 from chirp.ui import inputdialog, common
+from chirp.ui import compat
 from chirp import platform, directory, util
-from chirp.drivers import generic_xml, generic_csv, repeaterbook
+from chirp.drivers import generic_csv, repeaterbook
 from chirp.drivers import ic9x, kenwood_live, idrp, vx7, vx5, vx6
 from chirp.drivers import icf, ic9x_icf
 from chirp import CHIRP_VERSION, chirp_common, detect, errors
@@ -45,7 +46,7 @@ if __name__ == "__main__":
 
 try:
     import serial
-except ImportError, e:
+except ImportError as e:
     common.log_exception()
     common.show_error("\nThe Pyserial module is not installed!")
 
@@ -374,7 +375,7 @@ of file.
                 if not radio:
                     return
                 LOG.debug("Manually selected %s" % radio)
-            except Exception, e:
+            except Exception as e:
                 common.log_exception()
                 common.show_error(os.path.basename(fname) + ": " + str(e))
                 return
@@ -384,7 +385,7 @@ of file.
             eset = editorset.EditorSet(radio, self,
                                        filename=fname,
                                        tempname=tempname)
-        except Exception, e:
+        except Exception as e:
             common.log_exception()
             common.show_error(
                 _("There was an error opening {fname}: {error}").format(
@@ -491,7 +492,7 @@ of file.
 
         try:
             eset.save(fname)
-        except Exception, e:
+        except Exception as e:
             d = inputdialog.ExceptionDialog(e)
             d.run()
             d.destroy()
@@ -574,7 +575,7 @@ of file.
             try:
                 shutil.copy(fn, stock_dir)
                 LOG.debug("Copying %s -> %s" % (fn, stock_dir))
-            except Exception, e:
+            except Exception as e:
                 LOG.error("Unable to copy %s to %s: %s" % (fn, stock_dir, e))
                 return False
         return True
@@ -584,7 +585,7 @@ of file.
         if not os.path.isdir(stock_dir):
             try:
                 os.mkdir(stock_dir)
-            except Exception, e:
+            except Exception as e:
                 LOG.error("Unable to create directory: %s" % stock_dir)
                 return
         if not self.copy_shipped_stock_configs(stock_dir):
@@ -725,12 +726,13 @@ of file.
                   (rclass.VENDOR, rclass.MODEL, settings.port))
 
         try:
-            ser = serial.Serial(port=settings.port,
-                                baudrate=rclass.BAUD_RATE,
-                                rtscts=rclass.HARDWARE_FLOW,
-                                timeout=0.25)
+            ser = compat.CompatSerial.get(rclass.NEEDS_COMPAT_SERIAL,
+                                          port=settings.port,
+                                          baudrate=rclass.BAUD_RATE,
+                                          rtscts=rclass.HARDWARE_FLOW,
+                                          timeout=0.25)
             ser.flushInput()
-        except serial.SerialException, e:
+        except serial.SerialException as e:
             d = inputdialog.ExceptionDialog(e)
             d.run()
             d.destroy()
@@ -771,12 +773,13 @@ of file.
             return
 
         try:
-            ser = serial.Serial(port=settings.port,
-                                baudrate=radio.BAUD_RATE,
-                                rtscts=radio.HARDWARE_FLOW,
-                                timeout=0.25)
+            ser = compat.CompatSerial.get(radio.NEEDS_COMPAT_SERIAL,
+                                          port=settings.port,
+                                          baudrate=radio.BAUD_RATE,
+                                          rtscts=radio.HARDWARE_FLOW,
+                                          timeout=0.25)
             ser.flushInput()
-        except serial.SerialException, e:
+        except serial.SerialException as e:
             d = inputdialog.ExceptionDialog(e)
             d.run()
             d.destroy()
@@ -910,7 +913,7 @@ of file.
                 radio = dmrmarc.DMRMARCRadio(None)
                 radio.set_params(city, state, country)
                 self.do_open_live(radio, read_only=True)
-            except errors.RadioError, e:
+            except errors.RadioError as e:
                 common.show_error(e)
 
         self.window.set_cursor(None)
@@ -1021,7 +1024,6 @@ of file.
         query = query % (code,
                          band and band or "%%",
                          county and county or "%%")
-        print query
 
         # Do this in case the import process is going to take a while
         # to make sure we process events leading up to this
@@ -1045,11 +1047,11 @@ of file.
                                             ("query=%s\n" % query) +
                                             ("\n") +
                                             ("\n".join(radio.errors)))
-        except errors.InvalidDataError, e:
+        except errors.InvalidDataError as e:
             common.show_error(str(e))
             self.window.set_cursor(None)
             return
-        except Exception, e:
+        except Exception as e:
             common.log_exception()
 
         reporting.report_model_usage(radio, "import", True)
@@ -1127,7 +1129,6 @@ of file.
 
         query = "https://www.repeaterbook.com/repeaters/downloads/CHIRP/" \
                 "app_direct.php?loc=%s&band=%s&dist=%s" % (loc, band, dist)
-        print query
 
         # Do this in case the import process is going to take a while
         # to make sure we process events leading up to this
@@ -1151,11 +1152,11 @@ of file.
                                             ("query=%s\n" % query) +
                                             ("\n") +
                                             ("\n".join(radio.errors)))
-        except errors.InvalidDataError, e:
+        except errors.InvalidDataError as e:
             common.show_error(str(e))
             self.window.set_cursor(None)
             return
-        except Exception, e:
+        except Exception as e:
             common.log_exception()
 
         reporting.report_model_usage(radio, "import", True)
@@ -1239,7 +1240,7 @@ of file.
 
         try:
             radio = PRRadio(filename)
-        except Exception, e:
+        except Exception as e:
             common.show_error(str(e))
             return
 
@@ -1378,7 +1379,7 @@ of file.
                 radio = radioreference.RadioReferenceRadio(None)
                 radio.set_params(zipcode, username, passwd)
                 self.do_open_live(radio, read_only=True)
-            except errors.RadioError, e:
+            except errors.RadioError as e:
                 common.show_error(e)
 
         self.window.set_cursor(None)
@@ -1423,18 +1424,13 @@ of file.
             sys.version.split()[0])
 
         # Set url hook to handle user activating a URL link in the about dialog
-        gtk.about_dialog_set_url_hook(lambda dlg, url: webbrowser.open(url))
+        with compat.py3safe():
+            gtk.about_dialog_set_url_hook(lambda dlg, url: webbrowser.open(url))
 
         d.set_name("CHIRP")
         d.set_version(CHIRP_VERSION)
         d.set_copyright("Copyright 2015 Dan Smith (KK7DS)")
         d.set_website("http://chirp.danplanet.com")
-        d.set_authors(("Dan Smith KK7DS <dsmith@danplanet.com>",
-                       _("With significant contributions from:"),
-                       "Tom KD7LXL",
-                       "Marco IZ3GME",
-                       "Jim KC9HI"
-                       ))
         d.set_translator_credits("Polish: Grzegorz SQ2RBY" +
                                  os.linesep +
                                  "Italian: Fabio IZ2QDH" +
@@ -1620,7 +1616,7 @@ of file.
             # See this for why:
             # http://stackoverflow.com/questions/2904274/globals-and-locals-in-python-exec
             exec(pyc, globals(), globals())
-        except Exception, e:
+        except Exception as e:
             common.log_exception()
             common.show_error("Unable to load module: %s" % e)
 
@@ -1934,14 +1930,18 @@ of file.
         box = gtk.HBox(False, 2)
 
         self.sb_general = gtk.Statusbar()
-        self.sb_general.set_has_resize_grip(False)
         self.sb_general.show()
         box.pack_start(self.sb_general, 1, 1, 1)
 
         self.sb_radio = gtk.Statusbar()
-        self.sb_radio.set_has_resize_grip(True)
         self.sb_radio.show()
         box.pack_start(self.sb_radio, 1, 1, 1)
+
+        with compat.py3safe(quiet=True):
+            # Gtk2 had resize grips on the status bars, so remove them
+            # if we can
+            self.sb_general.set_has_resize_grip(False)
+            self.sb_radio.set_has_resize_grip(True)
 
         box.show()
         return box
@@ -2061,11 +2061,16 @@ of file.
     def __init__(self, *args, **kwargs):
         gtk.Window.__init__(self, *args, **kwargs)
 
-        def expose(window, event):
+        def expose(window, event=None):
             allocation = window.get_allocation()
             CONF.set_int("window_w", allocation.width, "state")
             CONF.set_int("window_h", allocation.height, "state")
-        self.connect("expose_event", expose)
+
+        with compat.py3safe(quiet=True):
+            # GTK3 does not have 'expose_event' and I am not sure which
+            # is a suitable replacement. We only need this to save window
+            # size in the config, so don't warn about it.
+            self.connect("expose_event", expose)
 
         def state_change(window, event):
             CONF.set_bool(
