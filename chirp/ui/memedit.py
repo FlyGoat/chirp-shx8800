@@ -16,6 +16,7 @@
 
 import threading
 
+import base64
 import gtk
 import pango
 from gobject import TYPE_INT, \
@@ -29,7 +30,10 @@ import pickle
 import os
 import logging
 
+import six
+
 from chirp.ui import common, shiftdialog, miscwidgets, config, memdetail
+from chirp.ui import compat
 from chirp.ui import bandplans
 from chirp import chirp_common, errors, directory, import_logic
 
@@ -178,7 +182,7 @@ class MemoryEditor(common.Editor):
 
         try:
             new = chirp_common.parse_freq(new)
-        except ValueError, e:
+        except ValueError as e:
             LOG.error("chirp_common.parse_freq error: %s", e)
             new = None
 
@@ -423,7 +427,7 @@ class MemoryEditor(common.Editor):
             if extd:
                 val = extd
 
-        return val
+        return str(val)
 
     def render(self, _, rend, model, iter, colnum):
         val, hide = model.get(iter, colnum, self.col("_hide_cols"))
@@ -939,7 +943,6 @@ class MemoryEditor(common.Editor):
 
     def cell_editing_stopped(self, *args):
         self._in_editing = False
-        print 'Would activate %s' % str(self._edit_path)
         self.view.grab_focus()
         self.view.set_cursor(*self._edit_path)
 
@@ -972,7 +975,7 @@ class MemoryEditor(common.Editor):
                 for i in col_order:
                     if i not in default_col_order:
                         raise Exception()
-        except Exception, e:
+        except Exception as e:
             LOG.error("column order setting: %s", e)
             col_order = default_col_order
 
@@ -981,12 +984,14 @@ class MemoryEditor(common.Editor):
         unsupported_cols = self.get_unsupported_columns()
         visible_cols = self.get_columns_visible()
 
+        self._renderers = {}
         cols = {}
         i = 0
         for _cap, _type, _rend in self.cols:
             if not _rend:
                 continue
             rend = _rend()
+            self._renderers[_cap] = rend
             rend.connect('editing-started', self.cell_editing_started)
             rend.connect('editing-canceled', self.cell_editing_stopped)
             rend.connect('edited', self.cell_editing_stopped)
@@ -1002,18 +1007,29 @@ class MemoryEditor(common.Editor):
                 else:
                     choices = gtk.ListStore(TYPE_STRING, TYPE_STRING)
                     for choice in self.choices[_cap]:
-                        choices.append([choice, self._render(i, choice)])
+                        choices.append([str(choice), self._render(i, choice)])
                 rend.set_property("model", choices)
                 rend.set_property("text-column", 1)
                 rend.set_property("editable", True)
                 rend.set_property("has-entry", False)
                 rend.connect("edited", self.edited, _cap)
-                col = gtk.TreeViewColumn(_cap, rend, text=i, sensitive=filled)
+                if six.PY3:
+                    # FIXMEPY3: we can't set sensitive on the column without
+                    # it affecting the whole column (which makes sense).
+                    # Setting it on the renderer doesn't seem to work like
+                    # we want either.
+                    col = gtk.TreeViewColumn(_cap, rend, text=i)
+                else:
+                    col = gtk.TreeViewColumn(_cap, rend, text=i, sensitive=filled)
                 col.set_cell_data_func(rend, self.render, i)
             else:
                 rend.set_property("editable", _cap not in non_editable)
                 rend.connect("edited", self.edited, _cap)
-                col = gtk.TreeViewColumn(_cap, rend, text=i, sensitive=filled)
+                if six.PY3:
+                    # FIXMEPY3: See above
+                    col = gtk.TreeViewColumn(_cap, rend, text=i)
+                else:
+                    col = gtk.TreeViewColumn(_cap, rend, text=i, sensitive=filled)
                 col.set_cell_data_func(rend, self.render, i)
 
             col.set_reorderable(True)
@@ -1048,6 +1064,15 @@ class MemoryEditor(common.Editor):
             raise Exception(
                 _("Internal Error: Column {name} not found").format(
                     name=caption))
+
+    def rend(self, caption):
+        try:
+            return self._renderers[caption]
+        except KeyError:
+            print(self._renderers)
+            raise Exception(
+                _('Internal Error: Renderer for column %s not found') % (
+                    caption))
 
     def prefill(self):
         self.store.clear()
@@ -1192,7 +1217,7 @@ class MemoryEditor(common.Editor):
             self._config.get_int(hikey) or 999
 
         self.lo_limit_adj = gtk.Adjustment(lostart, min, max-1, 1, 10)
-        lo = gtk.SpinButton(self.lo_limit_adj)
+        lo = compat.SpinButton(self.lo_limit_adj)
         lo.connect("value-changed", self._store_limit, "lo")
         lo.show()
         hbox.pack_start(lo, 0, 0, 0)
@@ -1202,7 +1227,7 @@ class MemoryEditor(common.Editor):
         hbox.pack_start(lab, 0, 0, 0)
 
         self.hi_limit_adj = gtk.Adjustment(histart, min+1, max, 1, 10)
-        hi = gtk.SpinButton(self.hi_limit_adj)
+        hi = compat.SpinButton(self.hi_limit_adj)
         hi.connect("value-changed", self._store_limit, "hi")
         hi.show()
         hbox.pack_start(hi, 0, 0, 0)
@@ -1428,9 +1453,15 @@ class MemoryEditor(common.Editor):
 
                 self._set_memory(iter, mem)
 
-        result = pickle.dumps((self._features, selection))
-        clipboard = gtk.Clipboard(selection="CLIPBOARD")
-        clipboard.set_text(result)
+        result = base64.b64encode(pickle.dumps((self._features, selection))).decode()
+        if hasattr(gtk.Clipboard, 'get'):
+            # GTK3
+            clipboard = gtk.Clipboard.get(gtk.gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(result, len(result))
+        else:
+            # GTK2
+            clipboard = gtk.Clipboard(selection="CLIPBOARD")
+            clipboard.set_text(result)
         clipboard.store()
 
         return cut  # Only changed if we did a cut
@@ -1449,7 +1480,7 @@ class MemoryEditor(common.Editor):
         always = False
 
         try:
-            src_features, mem_list = pickle.loads(text)
+            src_features, mem_list = pickle.loads(base64.b64decode(text))
         except Exception:
             LOG.error("Paste failed to unpickle")
             return
@@ -1524,8 +1555,15 @@ class MemoryEditor(common.Editor):
             self.rthread.submit(job)
 
     def paste_selection(self):
-        clipboard = gtk.Clipboard(selection="CLIPBOARD")
-        clipboard.request_text(self._paste_selection)
+        if hasattr(gtk.Clipboard, 'get'):
+            # GTK3
+            clipboard = gtk.Clipboard.get(gtk.gdk.SELECTION_CLIPBOARD)
+            text = clipboard.wait_for_text()
+            self._paste_selection(clipboard, text, None)
+        else:
+            # GTK2
+            clipboard = gtk.Clipboard(selection="CLIPBOARD")
+            clipboard.request_text(self._paste_selection)
 
     def select_all(self):
         self.view.get_selection().select_all()
@@ -1640,13 +1678,11 @@ class DstarMemoryEditor(MemoryEditor):
             for i in _dv_columns:
                 if i not in self.choices:
                     continue
-                column = self.view.get_column(self.col(i))
-                rend = column.get_cell_renderers()[0]
+                rend = self.rend(i)
                 rend.set_property("has-entry", True)
 
         for i in _dv_columns:
-            col = self.view.get_column(self.col(i))
-            rend = col.get_cell_renderers()[0]
+            rend = self.rend(i)
             rend.set_property("family", "Monospace")
 
     def set_urcall_list(self, urcalls):

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import struct
 import re
 import time
 import logging
@@ -21,6 +20,7 @@ import logging
 from chirp import chirp_common, errors, util, memmap
 from chirp.settings import RadioSetting, RadioSettingGroup, \
     RadioSettingValueBoolean, RadioSettings
+from chirp.util import StringStruct as struct
 
 LOG = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ class RadioStream:
                     frames.append(frame)
 
                 self.data = rest
-            except errors.InvalidDataError, e:
+            except errors.InvalidDataError as e:
                 LOG.error("Failed to parse frame (cmd=%i): %s" % (cmd, e))
                 return []
 
@@ -190,13 +190,19 @@ def send_clone_frame(radio, cmd, data, raw=False, checksum=False):
 def process_data_frame(radio, frame, _mmap):
     """Process a data frame, adding the payload to @_mmap"""
     _data = radio.process_frame_payload(frame.payload)
+
+    # NOTE: On the _data[N:N+1] below. Because:
+    #  - on py2 bytes[N] is a bytes
+    #  - on py3 bytes[N] is an int
+    #  - on both bytes[N:M] is a bytes
+    # So we do a slice so we get consistent behavior
     if len(_mmap) >= 0x10000:
         saddr, = struct.unpack(">I", _data[0:4])
-        length, = struct.unpack("B", _data[4])
+        length, = struct.unpack("B", _data[4:5])
         data = _data[5:5+length]
     else:
         saddr, = struct.unpack(">H", _data[0:2])
-        length, = struct.unpack("B", _data[2])
+        length, = struct.unpack("B", _data[2:3])
         data = _data[3:3+length]
 
     try:
@@ -286,7 +292,7 @@ def clone_from_radio(radio):
     """Do a full clone out of the radio's memory"""
     try:
         return _clone_from_radio(radio)
-    except Exception, e:
+    except Exception as e:
         raise errors.RadioError("Failed to communicate with the radio: %s" % e)
 
 
@@ -377,7 +383,7 @@ def clone_to_radio(radio):
     """Initiate a full memory clone out to @radio"""
     try:
         return _clone_to_radio(radio)
-    except Exception, e:
+    except Exception as e:
         logging.exception("Failed to communicate with the radio")
         raise errors.RadioError("Failed to communicate with the radio: %s" % e)
 
@@ -416,7 +422,7 @@ def convert_data_line(line):
             val = int("%s%s" % (data[i], data[i+1]), 16)
             i += 2
             _mmap += struct.pack("B", val)
-        except ValueError, e:
+        except ValueError as e:
             LOG.debug("Failed to parse byte: %s" % e)
             break
 
@@ -442,19 +448,25 @@ def read_file(filename):
 
 def is_9x_icf(filename):
     """Returns True if @filename is an IC9x ICF file"""
-    f = file(filename)
-    mdata = f.read(8)
-    f.close()
+    try:
+        with open(filename) as f:
+            mdata = f.read(8)
+    except UnicodeDecodeError:
+        # ICF files are ASCII, so any unicode failure means no.
+        return False
 
     return mdata in ["30660000", "28880000"]
 
 
 def is_icf_file(filename):
     """Returns True if @filename is an ICF file"""
-    f = file(filename)
-    data = f.readline()
-    data += f.readline()
-    f.close()
+    try:
+        with open(filename) as f:
+            data = f.readline()
+            data += f.readline()
+    except UnicodeDecodeError:
+        # ICF files are ASCII, so any unicode failure means no.
+        return False
 
     data = data.replace("\n", "").replace("\r", "")
 
@@ -532,7 +544,7 @@ class IcomIndexedBankModel(IcomBankModel,
             raise Exception("Memory %i is not in bank %s" % (memory.number,
                                                              bank))
 
-        if index not in range(*self._radio._bank_index_bounds):
+        if index not in list(range(*self._radio._bank_index_bounds)):
             raise Exception("Invalid index")
         self._radio._set_bank_index(memory.number, index)
 
@@ -599,7 +611,7 @@ class IcomCloneModeRadio(chirp_common.CloneModeRadio):
                 val = int("%s%s" % (bcddata[i], bcddata[i+1]), 16)
                 i += 2
                 data += struct.pack("B", val)
-            except ValueError, e:
+            except ValueError as e:
                 LOG.error("Failed to parse byte: %s" % e)
                 break
 
