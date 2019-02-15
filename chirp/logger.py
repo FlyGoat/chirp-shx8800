@@ -25,7 +25,7 @@ import os
 import sys
 import logging
 import argparse
-import platform
+from . import platform
 from chirp import CHIRP_VERSION
 
 
@@ -38,7 +38,7 @@ def version_string():
 
 class VersionAction(argparse.Action):
     def __call__(self, parser, namespace, value, option_string=None):
-        print version_string()
+        print(version_string())
         sys.exit(1)
 
 
@@ -121,7 +121,7 @@ class Logger(object):
         if self.logfile is None:
             self.logname = name
             # always truncate the log file
-            with file(name, "w") as fh:
+            with open(name, "w") as fh:
                 pass
             self.logfile = logging.FileHandler(name)
             format_str = self.log_format
