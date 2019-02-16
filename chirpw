@@ -15,14 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import glob
 import os
-
-from chirp import logger
-from chirp import elib_intl
-from chirp import platform
-from chirp.drivers import *
-from chirp.ui import config
-
+import six
 
 import sys
 import os
@@ -30,6 +25,19 @@ import locale
 import gettext
 import argparse
 import logging
+
+if six.PY3:
+    from gi import pygtkcompat
+    pygtkcompat.enable()
+    pygtkcompat.enable_gtk(version='3.0')
+
+from chirp import directory
+from chirp import logger
+from chirp import elib_intl
+from chirp import platform
+from chirp.ui import config
+
+directory.safe_import_drivers()
 
 LOG = logging.getLogger("chirpw")
 
@@ -99,7 +107,7 @@ except:
     vmaj, vmin = pyver.split(".", 2)
     vrel = 0
 
-if int(vmaj) < 2 or int(vmin) < 6:
+if int(vmaj) == 2 and int(vmin) < 6:
     # Python <2.6, emulate str.format()
     import __builtin__
 

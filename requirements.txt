@@ -1,0 +1,4 @@
+six
+PyGObject;python_version>="3.0"
+pyserial
+future
