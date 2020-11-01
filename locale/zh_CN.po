@@ -1,0 +1,1342 @@
+# Chinese (simplified) translations for CHIRP package.
+# Copyright (C) 2011 Dan Smith <dsmith@danplanet.com>
+# This file is distributed under the same license as the CHIRP package.
+# Dan Smith <dan@theine>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CHIRP\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 14:45+0800\n"
+"PO-Revision-Date: 2020-11-01 14:42+0800\n"
+"Last-Translator: Jiaxun Yang <jiaxun.yang@flygoat.com>\n"
+"Language-Team: English\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.4.1\n"
+
+#: ../chirp/ui/bandplans.py:96
+msgid ""
+"Band plans define default channel settings for frequencies in a region.  "
+"Choose a band plan or None for completely manual channel settings."
+msgstr ""
+"频段划分计划定义列一个地区内默认的信道设置。 "
+"选择一个计划或者选 无 以完全手动设置信道。"
+
+#: ../chirp/ui/bankedit.py:58
+#, fuzzy, python-format
+msgid "Retrieving %s information"
+msgstr "正在获取 %s 信息"
+
+#: ../chirp/ui/bankedit.py:81
+#, fuzzy, python-format
+msgid "Setting name on %s"
+msgstr "正在设置名称 %s"
+
+#: ../chirp/ui/bankedit.py:93 ../chirp/ui/bankedit.py:283
+#: ../chirp/ui/importdialog.py:600 ../chirp/ui/memdetail.py:306
+#: ../chirp/ui/memedit.py:75 ../chirp/ui/memedit.py:96
+#: ../chirp/ui/memedit.py:347 ../chirp/ui/memedit.py:1088
+#: ../chirp/ui/memedit.py:1145 ../chirp/ui/memedit.py:1296
+#: ../chirp/ui/memedit.py:1298
+msgid "Name"
+msgstr "名称"
+
+#: ../chirp/ui/bankedit.py:222
+#, fuzzy, python-brace-format
+msgid "Updating {type} index for memory {num}"
+msgstr "正在从记忆体更新组索引 {num}"
+
+#: ../chirp/ui/bankedit.py:232
+#, fuzzy, python-brace-format
+msgid "Updating mapping information for memory {num}"
+msgstr "正在从记忆体更新组信息 {num}"
+
+#: ../chirp/ui/bankedit.py:238 ../chirp/ui/bankedit.py:269
+#, python-brace-format
+msgid "Getting memory {num}"
+msgstr "正在获取记忆体 {num}"
+
+#: ../chirp/ui/bankedit.py:253
+#, python-brace-format
+msgid "Setting index for memory {num}"
+msgstr "正在为记忆体设置索引 {num}"
+
+#: ../chirp/ui/bankedit.py:262
+#, fuzzy, python-brace-format
+msgid "Getting {type} for memory {num}"
+msgstr "正在为记忆体获取组 {num}"
+
+#: ../chirp/ui/bankedit.py:281 ../chirp/ui/memedit.py:73
+#: ../chirp/ui/memedit.py:203 ../chirp/ui/memedit.py:346
+#: ../chirp/ui/memedit.py:421 ../chirp/ui/memedit.py:440
+#: ../chirp/ui/memedit.py:454 ../chirp/ui/memedit.py:477
+#: ../chirp/ui/memedit.py:499 ../chirp/ui/memedit.py:525
+#: ../chirp/ui/memedit.py:537 ../chirp/ui/memedit.py:561
+#: ../chirp/ui/memedit.py:563 ../chirp/ui/memedit.py:636
+#: ../chirp/ui/memedit.py:650 ../chirp/ui/memedit.py:652
+#: ../chirp/ui/memedit.py:694 ../chirp/ui/memedit.py:696
+#: ../chirp/ui/memedit.py:770 ../chirp/ui/memedit.py:904
+#: ../chirp/ui/memedit.py:979 ../chirp/ui/memedit.py:1032
+#: ../chirp/ui/memedit.py:1086 ../chirp/ui/memedit.py:1112
+#: ../chirp/ui/memedit.py:1125 ../chirp/ui/memedit.py:1143
+#: ../chirp/ui/memedit.py:1472
+msgid "Loc"
+msgstr "信道"
+
+#: ../chirp/ui/bankedit.py:282 ../chirp/ui/importdialog.py:601
+#: ../chirp/ui/memdetail.py:304 ../chirp/ui/memedit.py:74
+#: ../chirp/ui/memedit.py:97 ../chirp/ui/memedit.py:218
+#: ../chirp/ui/memedit.py:340 ../chirp/ui/memedit.py:348
+#: ../chirp/ui/memedit.py:377 ../chirp/ui/memedit.py:402
+#: ../chirp/ui/memedit.py:410 ../chirp/ui/memedit.py:1089
+#: ../chirp/ui/memedit.py:1142
+msgid "Frequency"
+msgstr "频率"
+
+#: ../chirp/ui/bankedit.py:284
+msgid "Index"
+msgstr "索引"
+
+#: ../chirp/ui/bankedit.py:375
+#, fuzzy, python-brace-format
+msgid "Getting {type} information for memory {num}"
+msgstr "正在为记忆体获取组信息 {num}"
+
+#: ../chirp/ui/bankedit.py:401
+#, fuzzy, python-format
+msgid "Getting %s information"
+msgstr "正在获取组信息"
+
+#: ../chirp/ui/clone.py:40
+#, python-brace-format
+msgid "{vendor} {model} on {port}"
+msgstr "{vendor} {model} 于 {port}"
+
+#: ../chirp/ui/clone.py:110 ../chirp/ui/clone.py:111 ../chirp/ui/clone.py:173
+msgid "Detect"
+msgstr "探测"
+
+#: ../chirp/ui/clone.py:134
+msgid "Port"
+msgstr "端口"
+
+#: ../chirp/ui/clone.py:135
+msgid "Vendor"
+msgstr "厂商"
+
+#: ../chirp/ui/clone.py:136
+msgid "Model"
+msgstr "型号"
+
+#: ../chirp/ui/clone.py:149
+msgid "Radio"
+msgstr "电台"
+
+#: ../chirp/ui/clone.py:178
+#, python-brace-format
+msgid "Unable to detect radio on {port}"
+msgstr "无法在 {port} 探测到电台"
+
+#: ../chirp/ui/clone.py:210
+#, python-brace-format
+msgid "Internal error: Unable to upload to {model}"
+msgstr "内部错误: 无法上传到 {model}"
+
+#: ../chirp/ui/cloneprog.py:44
+msgid "Clone Progress"
+msgstr "克隆进度"
+
+#: ../chirp/ui/cloneprog.py:47
+msgid "Cloning"
+msgstr "克隆中"
+
+#: ../chirp/ui/cloneprog.py:56
+msgid "Cancel"
+msgstr "取消"
+
+#: ../chirp/ui/common.py:246
+msgid "Completed"
+msgstr "已完成"
+
+#: ../chirp/ui/common.py:247
+msgid "idle"
+msgstr "空闲"
+
+#: ../chirp/ui/common.py:354
+msgid "Details"
+msgstr "细节"
+
+#: ../chirp/ui/common.py:357
+msgid "Proceed?"
+msgstr "继续?"
+
+#: ../chirp/ui/common.py:366
+#, fuzzy
+msgid "Do not show this next time"
+msgstr "不再提示"
+
+#: ../chirp/ui/dstaredit.py:44
+msgid "Callsign"
+msgstr "呼号"
+
+#: ../chirp/ui/dstaredit.py:129
+msgid "Your callsign"
+msgstr "你的呼号"
+
+#: ../chirp/ui/dstaredit.py:137
+msgid "Repeater callsign"
+msgstr "中继呼号"
+
+#: ../chirp/ui/dstaredit.py:145
+msgid "My callsign"
+msgstr "我打呼号"
+
+#: ../chirp/ui/dstaredit.py:175 ../chirp/ui/memedit.py:1624
+msgid "Downloading URCALL list"
+msgstr "正在下载 URCALL 列表"
+
+#: ../chirp/ui/dstaredit.py:179 ../chirp/ui/memedit.py:1636
+msgid "Downloading RPTCALL list"
+msgstr "正在下载 RPTCALL 列表"
+
+#: ../chirp/ui/dstaredit.py:183
+msgid "Downloading MYCALL list"
+msgstr "正在下载 MYCALL 列表"
+
+#: ../chirp/ui/editorset.py:85
+#, python-format
+msgid "Memories (%(variant)s)"
+msgstr ""
+
+#: ../chirp/ui/editorset.py:89
+msgid "Memories"
+msgstr "记忆体"
+
+#: ../chirp/ui/editorset.py:100
+msgid "D-STAR"
+msgstr "D-STAR"
+
+#: ../chirp/ui/editorset.py:149
+msgid "Settings"
+msgstr "设置"
+
+#: ../chirp/ui/editorset.py:158
+msgid "Browser"
+msgstr "浏览"
+
+#: ../chirp/ui/editorset.py:279
+#, python-brace-format
+msgid "The {vendor} {model} has multiple independent sub-devices"
+msgstr "{vendor} {model} 有多个独立子设备"
+
+#: ../chirp/ui/editorset.py:281
+msgid "Choose one to import from:"
+msgstr "选择一项以导入:"
+
+#: ../chirp/ui/editorset.py:286
+msgid "Cancelled"
+msgstr "已取消"
+
+#: ../chirp/ui/editorset.py:291
+msgid "Internal Error"
+msgstr "内部错误"
+
+#: ../chirp/ui/editorset.py:332
+#, python-brace-format
+msgid ""
+"There were errors while opening {file}. The affected memories will not be "
+"importable!"
+msgstr "打开 {file} 时发生错误。受影响的记忆体将无法被导入！"
+
+#: ../chirp/ui/editorset.py:344
+#, python-brace-format
+msgid "There was an error during import: {error}"
+msgstr "导入时发生错误:  {error}"
+
+#: ../chirp/ui/editorset.py:354
+msgid "Unsupported file type"
+msgstr "不支持的文件类型"
+
+#: ../chirp/ui/editorset.py:370 ../chirp/ui/editorset.py:385
+#, python-brace-format
+msgid "There was an error during export: {error}"
+msgstr "导出时发生错误: {error}"
+
+#: ../chirp/ui/editorset.py:399
+msgid "Priming memory"
+msgstr "正在填充记忆体"
+
+#: ../chirp/ui/importdialog.py:97
+#, python-brace-format
+msgid ""
+"Location {number} is already being imported. Choose another value for 'New "
+"Location' before selection 'Import'"
+msgstr "{number} 号已经被导入过了，请在’导入’前选择另一个’新位置’"
+
+#: ../chirp/ui/importdialog.py:129
+msgid "Invalid value. Must be an integer."
+msgstr "非法值，必须为整数。"
+
+#: ../chirp/ui/importdialog.py:138
+#, python-brace-format
+msgid "Location {number} is already being imported"
+msgstr "{number} 号已经被导入过了"
+
+#: ../chirp/ui/importdialog.py:195
+msgid "Updating URCALL list"
+msgstr "正在更新 URCALL 列表"
+
+#: ../chirp/ui/importdialog.py:200
+msgid "Updating RPTCALL list"
+msgstr "正在更新 RPTCALL 列表"
+
+#: ../chirp/ui/importdialog.py:274
+#, python-brace-format
+msgid "Setting memory {number}"
+msgstr "正在写入记忆体 {number}"
+
+#: ../chirp/ui/importdialog.py:279
+msgid "Importing bank information"
+msgstr "正在导入组信息"
+
+#: ../chirp/ui/importdialog.py:283
+msgid "Error importing memories:"
+msgstr "导入记忆体时发生错误:"
+
+#: ../chirp/ui/importdialog.py:395
+msgid "All"
+msgstr "所有"
+
+#: ../chirp/ui/importdialog.py:401
+msgid "None"
+msgstr "无"
+
+#: ../chirp/ui/importdialog.py:407
+msgid "Inverse"
+msgstr "反向"
+
+#: ../chirp/ui/importdialog.py:413
+msgid "Select"
+msgstr "选择"
+
+#: ../chirp/ui/importdialog.py:459
+msgid "Auto"
+msgstr "自动"
+
+#: ../chirp/ui/importdialog.py:465
+msgid "Reverse"
+msgstr "逆向"
+
+#: ../chirp/ui/importdialog.py:471
+msgid "Adjust New Location"
+msgstr "调整新编号"
+
+#: ../chirp/ui/importdialog.py:481
+msgid "Confirm overwrites"
+msgstr "确认覆盖"
+
+#: ../chirp/ui/importdialog.py:487
+msgid "Options"
+msgstr "选项"
+
+#: ../chirp/ui/importdialog.py:560
+msgid "Cannot be imported because"
+msgstr "无法导入，由于"
+
+#: ../chirp/ui/importdialog.py:577
+msgid "Import From File"
+msgstr "从文件导入"
+
+#: ../chirp/ui/importdialog.py:578 ../chirp/ui/mainapp.py:1842
+msgid "Import"
+msgstr "导入"
+
+#: ../chirp/ui/importdialog.py:598
+msgid "To"
+msgstr "到"
+
+#: ../chirp/ui/importdialog.py:599
+msgid "From"
+msgstr "从"
+
+#: ../chirp/ui/importdialog.py:602 ../chirp/ui/memdetail.py:334
+#: ../chirp/ui/memedit.py:89 ../chirp/ui/memedit.py:111
+#: ../chirp/ui/memedit.py:1103 ../chirp/ui/memedit.py:1160
+#: ../chirp/ui/memedit.py:1301
+msgid "Comment"
+msgstr "注释"
+
+#: ../chirp/ui/importdialog.py:606
+msgid "Location memory will be imported into"
+msgstr "记忆体位置将被导入到"
+
+#: ../chirp/ui/importdialog.py:607
+msgid "Location of memory in the file being imported"
+msgstr "文件中的的记忆体位置将被导入到"
+
+#: ../chirp/ui/importdialog.py:630
+msgid "Preparing memory list..."
+msgstr "正在准备记忆体列表..."
+
+#: ../chirp/ui/importdialog.py:640
+msgid "Export To File"
+msgstr "导出到文件"
+
+#: ../chirp/ui/importdialog.py:641 ../chirp/ui/mainapp.py:1843
+msgid "Export"
+msgstr "导出"
+
+#: ../chirp/ui/inputdialog.py:88
+msgid "An error has occurred"
+msgstr "发生了一个错误"
+
+#: ../chirp/ui/inputdialog.py:139
+msgid "Overwrite"
+msgstr "覆盖"
+
+#: ../chirp/ui/inputdialog.py:142
+msgid "File Exists"
+msgstr "文件已存在"
+
+#: ../chirp/ui/inputdialog.py:145
+#, python-brace-format
+msgid "The file {name} already exists. Do you want to overwrite it?"
+msgstr "文件 {name} 已存在，您希望覆盖他么？"
+
+#: ../chirp/ui/mainapp.py:268 ../chirp/ui/mainapp.py:503
+msgid "Untitled"
+msgstr "未命名"
+
+#: ../chirp/ui/mainapp.py:319 ../chirp/ui/mainapp.py:848
+msgid "All files"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:320 ../chirp/ui/mainapp.py:850
+msgid "CHIRP Radio Images"
+msgstr "CHIRP 设备镜像"
+
+#: ../chirp/ui/mainapp.py:321 ../chirp/ui/mainapp.py:849
+msgid "CHIRP Files"
+msgstr "CHIRP 文件"
+
+#: ../chirp/ui/mainapp.py:322 ../chirp/ui/mainapp.py:851
+#: ../chirp/ui/mainapp.py:1397
+msgid "CSV Files"
+msgstr "CSV 文件"
+
+#: ../chirp/ui/mainapp.py:323 ../chirp/ui/mainapp.py:852
+#, fuzzy
+msgid "DAT Files"
+msgstr "CSV 文件"
+
+#: ../chirp/ui/mainapp.py:324 ../chirp/ui/mainapp.py:853
+msgid "EVE Files (VX5)"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:325 ../chirp/ui/mainapp.py:854
+msgid "ICF Files"
+msgstr "ICF 文件"
+
+#: ../chirp/ui/mainapp.py:326 ../chirp/ui/mainapp.py:858
+#, fuzzy
+msgid "VX5 Commander Files"
+msgstr "VX7 Commander 文件"
+
+#: ../chirp/ui/mainapp.py:327 ../chirp/ui/mainapp.py:859
+#, fuzzy
+msgid "VX6 Commander Files"
+msgstr "VX7 Commander 文件"
+
+#: ../chirp/ui/mainapp.py:328 ../chirp/ui/mainapp.py:860
+msgid "VX7 Commander Files"
+msgstr "VX7 Commander 文件"
+
+#: ../chirp/ui/mainapp.py:338
+msgid ""
+"ICF files cannot be edited, only displayed or imported into another file. "
+"Open in read-only mode?"
+msgstr "ICF文件不可编辑，仅能展示或导入到其他格式。以只读模式打开？"
+
+#: ../chirp/ui/mainapp.py:361
+msgid ""
+"Unable to open this image. It was generated with a newer version of CHIRP "
+"and thus may be for a radio model that is not supported by this version. "
+"Please update to the latest version of CHIRP and try again."
+msgstr "无法打开由更新版本 CHIRP 生成的镜像"
+
+#: ../chirp/ui/mainapp.py:370
+#, fuzzy
+msgid "Unable to open this image: unsupported model"
+msgstr "无法对此电台做出变更"
+
+#: ../chirp/ui/mainapp.py:390
+#, python-brace-format
+msgid "There was an error opening {fname}: {error}"
+msgstr "打开时发生错误 {fname}: {error}"
+
+#: ../chirp/ui/mainapp.py:402
+#, python-brace-format
+msgid "{num} errors during open:"
+msgstr "打开时发生 {num} 个错误 :"
+
+#: ../chirp/ui/mainapp.py:410
+msgid "Note:"
+msgstr "注:"
+
+#: ../chirp/ui/mainapp.py:411
+#, python-brace-format
+msgid ""
+"The {vendor} {model} operates in <b>live mode</b>. This means that any "
+"changes you make are immediately sent to the radio. Because of this, you "
+"cannot perform the <u>Save</u> or <u>Upload</u> operations. If you wish to "
+"edit the contents offline, please <u>Export</u> to a CSV file, using the "
+"<b>File menu</b>."
+msgstr ""
+"{vendor} {model} 工作在 <b>即时模式</b>，这代表所有的操作都会被马上发送给设"
+"备。因此你无法进行 <u>保存</u> 或 <u>上传</u> 操作。如果你希望进行离线编辑， "
+"请使用<b>文件菜单</b> <u>导出</u> CSV 文件。"
+
+#: ../chirp/ui/mainapp.py:420
+msgid "Don't show this again"
+msgstr "不再提示"
+
+#: ../chirp/ui/mainapp.py:454
+#, python-brace-format
+msgid "{vendor} {model} image file"
+msgstr "{vendor} {model} 镜像文件"
+
+#: ../chirp/ui/mainapp.py:470
+msgid "VX7 Commander"
+msgstr "VX7 Commander"
+
+#: ../chirp/ui/mainapp.py:472
+#, fuzzy
+msgid "VX6 Commander"
+msgstr "VX6 Commander"
+
+#: ../chirp/ui/mainapp.py:474
+msgid "EVE"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:475
+#, fuzzy
+msgid "VX5 Commander"
+msgstr "VX5 Commander"
+
+#: ../chirp/ui/mainapp.py:542
+#, fuzzy
+msgid "Open recent file"
+msgstr "打开最近文件 {name}"
+
+#: ../chirp/ui/mainapp.py:609
+#, python-brace-format
+msgid "Import stock configuration {name}"
+msgstr "导入原厂配置 {name}"
+
+#: ../chirp/ui/mainapp.py:625
+#, python-brace-format
+msgid "Open stock configuration {name}"
+msgstr "打开原厂配置 {name}"
+
+#: ../chirp/ui/mainapp.py:646
+msgid "Proceed with experimental driver?"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:648
+msgid "This radio's driver is experimental. Do you want to proceed?"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:667
+#, fuzzy, python-brace-format
+msgid "{name} Information"
+msgstr "正在获取组信息"
+
+#: ../chirp/ui/mainapp.py:669
+#, python-brace-format
+msgid "{information}"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:673
+#, fuzzy
+msgid "Don't show information for any radio again"
+msgstr "不再提示"
+
+#: ../chirp/ui/mainapp.py:697
+#, python-brace-format
+msgid "{name} Instructions"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:699
+#, python-brace-format
+msgid "{instructions}"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:703
+#, fuzzy
+msgid "Don't show instructions for any radio again"
+msgstr "不再提示"
+
+#: ../chirp/ui/mainapp.py:815
+#, fuzzy
+msgid "Save Changes?"
+msgstr "放弃变更?"
+
+#: ../chirp/ui/mainapp.py:819
+msgid "File is modified, save changes before closing?"
+msgstr "文件已修改，退出前保存？"
+
+#: ../chirp/ui/mainapp.py:855
+msgid "Kenwood HMK Files"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:856
+msgid "Kenwood ITM Files"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:857
+msgid "Travel Plus Files"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:875
+msgid "DMR-MARC Repeater Database Dump"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:985 ../chirp/ui/mainapp.py:1092
+msgid "RepeaterBook Query"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1046 ../chirp/ui/mainapp.py:1152
+msgid "RepeaterBook query failed"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1219
+#, fuzzy, python-format
+msgid "Invalid value for %s"
+msgstr "此项目非法值"
+
+#: ../chirp/ui/mainapp.py:1242
+msgid "Query failed"
+msgstr "查询失败"
+
+#: ../chirp/ui/mainapp.py:1337
+msgid "RadioReference.com Query"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1443
+#, fuzzy
+msgid "With significant contributions from:"
+msgstr "与他们做出的巨大贡献:"
+
+#: ../chirp/ui/mainapp.py:1475
+msgid "Select Columns"
+msgstr "选择列"
+
+#: ../chirp/ui/mainapp.py:1490
+#, python-brace-format
+msgid "Visible columns for {radio}"
+msgstr "{radio} 的可见列"
+
+#: ../chirp/ui/mainapp.py:1553
+msgid "Reporting is disabled"
+msgstr "报告已禁用"
+
+#: ../chirp/ui/mainapp.py:1555
+msgid ""
+"The reporting feature of CHIRP is designed to help <u>improve quality</u> by "
+"allowing the authors to focus on the radio drivers used most often and "
+"errors experienced by the users. The reports contain no identifying "
+"information and are used only for statistical purposes by the authors. Your "
+"privacy is extremely important, but <u>please consider leaving this feature "
+"enabled to help make CHIRP better!</u>\n"
+"\n"
+"<b>Are you sure you want to disable this feature?</b>"
+msgstr ""
+"CHIRP 的报告功能被设计用于 <u>提升软件质量</u>。软件作者可以以此获悉设备驱动"
+"中用户常使用的功能与遇到的错误。提交的数据不包含任何识别性信息并将仅用于满足"
+"作者需求。您的隐私非常重要，但也 <u>请考虑保持此功能开启以帮助作者们让 CHIRP "
+"变得更好！</u>\n"
+"\n"
+"<b>您确定您要禁用此功能吗？</b>"
+
+#: ../chirp/ui/mainapp.py:1598
+msgid ""
+"Choose a language or Auto to use the operating system default. You will need "
+"to restart the application before the change will take effect"
+msgstr ""
+"选择一个语言或者选择自动以使用操作系统默认语言。你可能需要重启应用程序以使设"
+"置生效"
+
+#: ../chirp/ui/mainapp.py:1611
+#, fuzzy
+msgid "Python Modules"
+msgstr "Python 模块"
+
+#: ../chirp/ui/mainapp.py:1612
+msgid "Modules"
+msgstr "模块"
+
+#: ../chirp/ui/mainapp.py:1803
+msgid "_File"
+msgstr "_文件"
+
+#: ../chirp/ui/mainapp.py:1806
+msgid "Open stock config"
+msgstr "打开预设配置"
+
+#: ../chirp/ui/mainapp.py:1807
+msgid "_Recent"
+msgstr "_最近"
+
+#: ../chirp/ui/mainapp.py:1810
+#, fuzzy
+msgid "Load Module"
+msgstr "加载模块"
+
+#: ../chirp/ui/mainapp.py:1813
+msgid "_Edit"
+msgstr "_编辑"
+
+#: ../chirp/ui/mainapp.py:1814
+msgid "_Cut"
+msgstr "_裁剪"
+
+#: ../chirp/ui/mainapp.py:1815
+msgid "_Copy"
+msgstr "_复制"
+
+#: ../chirp/ui/mainapp.py:1816
+msgid "_Paste"
+msgstr "_黏贴"
+
+#: ../chirp/ui/mainapp.py:1818
+msgid "_Delete"
+msgstr "_删除"
+
+#: ../chirp/ui/mainapp.py:1819
+#, fuzzy
+msgid "Select _All"
+msgstr "全_选"
+
+#: ../chirp/ui/mainapp.py:1820
+msgid "Move _Up"
+msgstr "上_移"
+
+#: ../chirp/ui/mainapp.py:1822
+msgid "Move Dow_n"
+msgstr "下_移"
+
+#: ../chirp/ui/mainapp.py:1824
+msgid "E_xchange"
+msgstr "交_换"
+
+#: ../chirp/ui/mainapp.py:1826 ../chirp/ui/memedit.py:883
+msgid "P_roperties"
+msgstr "属_性"
+
+#: ../chirp/ui/mainapp.py:1827
+msgid "_View"
+msgstr "_查看"
+
+#: ../chirp/ui/mainapp.py:1828
+msgid "Columns"
+msgstr "列"
+
+#: ../chirp/ui/mainapp.py:1829
+msgid "Developer"
+msgstr "开发者"
+
+#: ../chirp/ui/mainapp.py:1830
+msgid "Show raw memory"
+msgstr "展示原始记忆体"
+
+#: ../chirp/ui/mainapp.py:1832
+msgid "Diff raw memories"
+msgstr "对比原始记忆体"
+
+#: ../chirp/ui/mainapp.py:1834
+msgid "Diff tabs"
+msgstr "对比标签"
+
+#: ../chirp/ui/mainapp.py:1836
+msgid "Change language"
+msgstr "更改语言"
+
+#: ../chirp/ui/mainapp.py:1837
+msgid "_Radio"
+msgstr "_电台"
+
+#: ../chirp/ui/mainapp.py:1838
+msgid "Download From Radio"
+msgstr "从电台下载"
+
+#: ../chirp/ui/mainapp.py:1840
+msgid "Upload To Radio"
+msgstr "上传到电台"
+
+#: ../chirp/ui/mainapp.py:1844
+#, fuzzy
+msgid "Import from data source"
+msgstr "从数据源导入"
+
+#: ../chirp/ui/mainapp.py:1846 ../chirp/ui/mainapp.py:1857
+msgid "DMR-MARC Repeaters"
+msgstr "DMR-MARC 中继"
+
+#: ../chirp/ui/mainapp.py:1847 ../chirp/ui/mainapp.py:1858
+msgid "RadioReference.com"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1849 ../chirp/ui/mainapp.py:1860
+msgid "RFinder"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1850 ../chirp/ui/mainapp.py:1862
+#, fuzzy
+msgid "RepeaterBook"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1851 ../chirp/ui/mainapp.py:1863
+msgid "RepeaterBook political query"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1853 ../chirp/ui/mainapp.py:1865
+msgid "RepeaterBook proximity query"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1855 ../chirp/ui/mainapp.py:1861
+msgid "przemienniki.net"
+msgstr ""
+
+#: ../chirp/ui/mainapp.py:1856
+msgid "Query data source"
+msgstr "查询数据源"
+
+#: ../chirp/ui/mainapp.py:1867
+msgid "CHIRP Native File"
+msgstr "CHIRP 原生文件"
+
+#: ../chirp/ui/mainapp.py:1869
+msgid "CSV File"
+msgstr "CSV 文件"
+
+#: ../chirp/ui/mainapp.py:1870
+msgid "Import from stock config"
+msgstr "从原厂配置导入"
+
+#: ../chirp/ui/mainapp.py:1872
+msgid "Channel defaults"
+msgstr "默认频道"
+
+#: ../chirp/ui/mainapp.py:1875
+msgid "Help"
+msgstr "帮助"
+
+#: ../chirp/ui/mainapp.py:1877
+msgid "Get Help Online..."
+msgstr "获取在线帮助"
+
+#: ../chirp/ui/mainapp.py:1888
+#, fuzzy
+msgid "Report Statistics"
+msgstr "汇报统计数据"
+
+#: ../chirp/ui/mainapp.py:1890
+msgid "Hide Unused Fields"
+msgstr "隐藏未使用的项目"
+
+#: ../chirp/ui/mainapp.py:1892
+#, fuzzy
+msgid "Smart Tone Modes"
+msgstr "智能哑音模式"
+
+#: ../chirp/ui/mainapp.py:1894
+msgid "Show Information"
+msgstr "展示信息"
+
+#: ../chirp/ui/mainapp.py:1896
+msgid "Show Instructions"
+msgstr "展示指令"
+
+#: ../chirp/ui/mainapp.py:1898
+msgid "Enable Developer Functions"
+msgstr "启用开发者功能"
+
+#: ../chirp/ui/mainapp.py:2014
+#, python-brace-format
+msgid "A new version of CHIRP is available: {ver}. "
+msgstr "一个新的 CHIRP 版本已经可用: {ver}."
+
+#: ../chirp/ui/mainapp.py:2138
+msgid "Error reporting is enabled"
+msgstr "错误报告已启用"
+
+#: ../chirp/ui/mainapp.py:2141
+msgid ""
+"If you wish to disable this feature you may do so in the <u>Help</u> menu"
+msgstr "你可以使用 <u>帮助</u> 菜单禁用此功能"
+
+#: ../chirp/ui/memdetail.py:219
+msgid "General"
+msgstr "通用"
+
+#: ../chirp/ui/memdetail.py:261
+msgid "Other"
+msgstr "其他"
+
+#: ../chirp/ui/memdetail.py:308 ../chirp/ui/memedit.py:76
+#: ../chirp/ui/memedit.py:109 ../chirp/ui/memedit.py:124
+#: ../chirp/ui/memedit.py:239 ../chirp/ui/memedit.py:245
+#: ../chirp/ui/memedit.py:279 ../chirp/ui/memedit.py:418
+#: ../chirp/ui/memedit.py:1090 ../chirp/ui/memedit.py:1151
+#: ../chirp/ui/memedit.py:1302 ../chirp/ui/memedit.py:1362
+msgid "Tone Mode"
+msgstr "哑音模式"
+
+#: ../chirp/ui/memdetail.py:310 ../chirp/ui/memedit.py:77
+#: ../chirp/ui/memedit.py:98 ../chirp/ui/memedit.py:115
+#: ../chirp/ui/memedit.py:174 ../chirp/ui/memedit.py:175
+#: ../chirp/ui/memedit.py:264 ../chirp/ui/memedit.py:294
+#: ../chirp/ui/memedit.py:301 ../chirp/ui/memedit.py:306
+#: ../chirp/ui/memedit.py:314 ../chirp/ui/memedit.py:351
+#: ../chirp/ui/memedit.py:416 ../chirp/ui/memedit.py:1091
+#: ../chirp/ui/memedit.py:1147 ../chirp/ui/memedit.py:1303
+msgid "Tone"
+msgstr "发射 CTCSS"
+
+#: ../chirp/ui/memdetail.py:312 ../chirp/ui/memedit.py:78
+#: ../chirp/ui/memedit.py:99 ../chirp/ui/memedit.py:116
+#: ../chirp/ui/memedit.py:268 ../chirp/ui/memedit.py:287
+#: ../chirp/ui/memedit.py:302 ../chirp/ui/memedit.py:307
+#: ../chirp/ui/memedit.py:318 ../chirp/ui/memedit.py:352
+#: ../chirp/ui/memedit.py:416 ../chirp/ui/memedit.py:1092
+#: ../chirp/ui/memedit.py:1148 ../chirp/ui/memedit.py:1299
+msgid "ToneSql"
+msgstr "接收 CTCSS"
+
+#: ../chirp/ui/memdetail.py:314 ../chirp/ui/memedit.py:79
+#: ../chirp/ui/memedit.py:100 ../chirp/ui/memedit.py:117
+#: ../chirp/ui/memedit.py:252 ../chirp/ui/memedit.py:288
+#: ../chirp/ui/memedit.py:296 ../chirp/ui/memedit.py:308
+#: ../chirp/ui/memedit.py:316 ../chirp/ui/memedit.py:353
+#: ../chirp/ui/memedit.py:412 ../chirp/ui/memedit.py:1093
+#: ../chirp/ui/memedit.py:1149 ../chirp/ui/memedit.py:1291
+#: ../chirp/ui/memedit.py:1368
+msgid "DTCS Code"
+msgstr "DTCS 代码"
+
+#: ../chirp/ui/memdetail.py:316
+#, fuzzy
+msgid "RX DTCS Code"
+msgstr "DTCS 代码"
+
+#: ../chirp/ui/memdetail.py:318 ../chirp/ui/memedit.py:81
+#: ../chirp/ui/memedit.py:102 ../chirp/ui/memedit.py:119
+#: ../chirp/ui/memedit.py:260 ../chirp/ui/memedit.py:290
+#: ../chirp/ui/memedit.py:298 ../chirp/ui/memedit.py:310
+#: ../chirp/ui/memedit.py:322 ../chirp/ui/memedit.py:355
+#: ../chirp/ui/memedit.py:1095 ../chirp/ui/memedit.py:1153
+#: ../chirp/ui/memedit.py:1293 ../chirp/ui/memedit.py:1367
+msgid "DTCS Pol"
+msgstr "DTCS 极性"
+
+#: ../chirp/ui/memdetail.py:320
+#, fuzzy
+msgid "Cross mode"
+msgstr "交叉模式"
+
+#: ../chirp/ui/memdetail.py:322 ../chirp/ui/memedit.py:83
+#: ../chirp/ui/memedit.py:104 ../chirp/ui/memedit.py:122
+#: ../chirp/ui/memedit.py:148 ../chirp/ui/memedit.py:155
+#: ../chirp/ui/memedit.py:280 ../chirp/ui/memedit.py:349
+#: ../chirp/ui/memedit.py:418 ../chirp/ui/memedit.py:1097
+#: ../chirp/ui/memedit.py:1154 ../chirp/ui/memedit.py:1304
+#: ../chirp/ui/memedit.py:1376
+msgid "Duplex"
+msgstr "双工"
+
+#: ../chirp/ui/memdetail.py:324 ../chirp/ui/memedit.py:84
+#: ../chirp/ui/memedit.py:105 ../chirp/ui/memedit.py:153
+#: ../chirp/ui/memedit.py:226 ../chirp/ui/memedit.py:325
+#: ../chirp/ui/memedit.py:350 ../chirp/ui/memedit.py:414
+#: ../chirp/ui/memedit.py:1098 ../chirp/ui/memedit.py:1155
+#: ../chirp/ui/memedit.py:1295
+msgid "Offset"
+msgstr "频差"
+
+#: ../chirp/ui/memdetail.py:326 ../chirp/ui/memedit.py:85
+#: ../chirp/ui/memedit.py:106 ../chirp/ui/memedit.py:120
+#: ../chirp/ui/memedit.py:167 ../chirp/ui/memedit.py:168
+#: ../chirp/ui/memedit.py:171 ../chirp/ui/memedit.py:402
+#: ../chirp/ui/memedit.py:1099 ../chirp/ui/memedit.py:1156
+#: ../chirp/ui/memedit.py:1294 ../chirp/ui/memedit.py:1361
+#: ../chirp/ui/memedit.py:1378 ../chirp/ui/memedit.py:1379
+#: ../chirp/ui/memedit.py:1548 ../chirp/ui/memedit.py:1566
+#: ../chirp/ui/memedit.py:1576
+msgid "Mode"
+msgstr "模式"
+
+#: ../chirp/ui/memdetail.py:328 ../chirp/ui/memedit.py:87
+#: ../chirp/ui/memedit.py:108 ../chirp/ui/memedit.py:123
+#: ../chirp/ui/memedit.py:158 ../chirp/ui/memedit.py:159
+#: ../chirp/ui/memedit.py:164 ../chirp/ui/memedit.py:1101
+#: ../chirp/ui/memedit.py:1158 ../chirp/ui/memedit.py:1297
+#: ../chirp/ui/memedit.py:1374
+msgid "Tune Step"
+msgstr "步进频率"
+
+#: ../chirp/ui/memdetail.py:330 ../chirp/ui/memedit.py:88
+#: ../chirp/ui/memedit.py:110 ../chirp/ui/memedit.py:1102
+#: ../chirp/ui/memedit.py:1159 ../chirp/ui/memedit.py:1305
+#: ../chirp/ui/memedit.py:1364
+msgid "Skip"
+msgstr "跳过"
+
+#: ../chirp/ui/memdetail.py:332 ../chirp/ui/memedit.py:86
+#: ../chirp/ui/memedit.py:107 ../chirp/ui/memedit.py:121
+#: ../chirp/ui/memedit.py:402 ../chirp/ui/memedit.py:1100
+#: ../chirp/ui/memedit.py:1157 ../chirp/ui/memedit.py:1306
+#: ../chirp/ui/memedit.py:1365 ../chirp/ui/memedit.py:1372
+msgid "Power"
+msgstr "功率"
+
+#: ../chirp/ui/memdetail.py:380
+msgid "Memory validation failed:"
+msgstr "记忆体校验失败:"
+
+#: ../chirp/ui/memedit.py:60
+msgid "Invalid value for this field"
+msgstr "此项目非法值"
+
+#: ../chirp/ui/memedit.py:80 ../chirp/ui/memedit.py:101
+#: ../chirp/ui/memedit.py:118 ../chirp/ui/memedit.py:256
+#: ../chirp/ui/memedit.py:289 ../chirp/ui/memedit.py:297
+#: ../chirp/ui/memedit.py:304 ../chirp/ui/memedit.py:309
+#: ../chirp/ui/memedit.py:320 ../chirp/ui/memedit.py:354
+#: ../chirp/ui/memedit.py:412 ../chirp/ui/memedit.py:1094
+#: ../chirp/ui/memedit.py:1150 ../chirp/ui/memedit.py:1292
+#: ../chirp/ui/memedit.py:1369
+#, fuzzy
+msgid "DTCS Rx Code"
+msgstr "DTCS 代码"
+
+#: ../chirp/ui/memedit.py:82 ../chirp/ui/memedit.py:103
+#: ../chirp/ui/memedit.py:125 ../chirp/ui/memedit.py:240
+#: ../chirp/ui/memedit.py:250 ../chirp/ui/memedit.py:272
+#: ../chirp/ui/memedit.py:281 ../chirp/ui/memedit.py:291
+#: ../chirp/ui/memedit.py:299 ../chirp/ui/memedit.py:303
+#: ../chirp/ui/memedit.py:311 ../chirp/ui/memedit.py:356
+#: ../chirp/ui/memedit.py:1096 ../chirp/ui/memedit.py:1152
+#: ../chirp/ui/memedit.py:1300 ../chirp/ui/memedit.py:1363
+msgid "Cross Mode"
+msgstr "交叉模式"
+
+#: ../chirp/ui/memedit.py:206
+#, python-brace-format
+msgid "Erasing memory {loc}"
+msgstr "正在擦除记忆体 {loc}"
+
+#: ../chirp/ui/memedit.py:335
+msgid "Unable to make changes to this model"
+msgstr "无法对此电台做出变更"
+
+#: ../chirp/ui/memedit.py:387
+msgid "Error setting memory"
+msgstr "设置记忆体时发生错误"
+
+#: ../chirp/ui/memedit.py:395 ../chirp/ui/memedit.py:461
+#: ../chirp/ui/memedit.py:737 ../chirp/ui/memedit.py:760
+#: ../chirp/ui/memedit.py:1525
+#, python-brace-format
+msgid "Writing memory {number}"
+msgstr "写记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:466
+msgid ""
+"This operation requires moving all subsequent channels by one spot until an "
+"empty location is reached.  This can take a LONG time.  Are you sure you "
+"want to do this?"
+msgstr ""
+"本操作要求移动接下来所有的频道直到找到一个空位。 这可能需要很长时间。 您还想"
+"继续吗？"
+
+#: ../chirp/ui/memedit.py:490
+#, fuzzy, python-brace-format
+msgid "Adding memory {number}"
+msgstr "增加记忆体 {memory}"
+
+#: ../chirp/ui/memedit.py:503 ../chirp/ui/memedit.py:1132
+#, python-brace-format
+msgid "Erasing memory {number}"
+msgstr "擦除记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:512 ../chirp/ui/memedit.py:620
+#: ../chirp/ui/memedit.py:667 ../chirp/ui/memedit.py:672
+#: ../chirp/ui/memedit.py:1072 ../chirp/ui/memedit.py:1394
+#, python-brace-format
+msgid "Getting memory {number}"
+msgstr "获取记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:599 ../chirp/ui/memedit.py:610
+#: ../chirp/ui/memedit.py:659
+#, python-brace-format
+msgid "Moving memory from {old} to {new}"
+msgstr "将记忆体从 {old} 移动到 {new}"
+
+#: ../chirp/ui/memedit.py:681
+#, python-brace-format
+msgid "Raw memory {number}"
+msgstr "原始记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:685 ../chirp/ui/memedit.py:713
+#: ../chirp/ui/memedit.py:718
+#, python-brace-format
+msgid "Getting raw memory {number}"
+msgstr "正在获取原始记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:690
+msgid "You can only diff two memories!"
+msgstr "您只可以对比两个记忆体!"
+
+#: ../chirp/ui/memedit.py:701
+#, python-brace-format
+msgid "Memory {number}"
+msgstr "记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:707
+#, python-brace-format
+msgid "Diff of {a} and {b}"
+msgstr "{a} 与 {b} 的对比"
+
+#: ../chirp/ui/memedit.py:741
+#, fuzzy, python-brace-format
+msgid "Getting original memory {number}"
+msgstr "正在获取原始记忆体 {number}"
+
+#: ../chirp/ui/memedit.py:779
+msgid "Memories must be contiguous"
+msgstr "记忆体必须是连续的"
+
+#: ../chirp/ui/memedit.py:870
+msgid "Cut"
+msgstr "裁剪"
+
+#: ../chirp/ui/memedit.py:871
+msgid "Copy"
+msgstr "复制"
+
+#: ../chirp/ui/memedit.py:872
+msgid "Paste"
+msgstr "黏贴"
+
+#: ../chirp/ui/memedit.py:873
+#, fuzzy
+msgid "Select All"
+msgstr "选择"
+
+#: ../chirp/ui/memedit.py:874
+msgid "Insert row above"
+msgstr "向上插入列"
+
+#: ../chirp/ui/memedit.py:875
+msgid "Insert row below"
+msgstr "向下插入列"
+
+#: ../chirp/ui/memedit.py:876
+msgid "Delete"
+msgstr "删除"
+
+#: ../chirp/ui/memedit.py:877
+#, fuzzy
+msgid "this memory"
+msgstr "本信道"
+
+#: ../chirp/ui/memedit.py:877
+#, fuzzy
+msgid "these memories"
+msgstr "这些信道"
+
+#: ../chirp/ui/memedit.py:878
+msgid "...and shift block up"
+msgstr "...并向上移动区块"
+
+#: ../chirp/ui/memedit.py:879
+msgid "...and shift all memories up"
+msgstr "...并向上移动所有信道"
+
+#: ../chirp/ui/memedit.py:880
+msgid "Move up"
+msgstr "上移"
+
+#: ../chirp/ui/memedit.py:881
+msgid "Move down"
+msgstr "下移"
+
+#: ../chirp/ui/memedit.py:882
+msgid "Exchange memories"
+msgstr "交换"
+
+#: ../chirp/ui/memedit.py:884
+msgid "Show Raw Memory"
+msgstr "查看原始记忆体"
+
+#: ../chirp/ui/memedit.py:885
+msgid "Diff Raw Memories"
+msgstr "对比原始记忆体"
+
+#: ../chirp/ui/memedit.py:1049
+#, python-brace-format
+msgid "Internal Error: Column {name} not found"
+msgstr "内部错误: 未找到 {name} 列"
+
+#: ../chirp/ui/memedit.py:1079
+#, python-brace-format
+msgid "Getting channel {chan}"
+msgstr "获取频道 {chan}"
+
+#: ../chirp/ui/memedit.py:1172
+#, fuzzy, python-brace-format
+msgid "Internal Error: Invalid limit {number}"
+msgstr "内部错误: 无效的限制 {number"
+
+#: ../chirp/ui/memedit.py:1183
+#, fuzzy
+msgid "Memory Range:"
+msgstr "信道:"
+
+#: ../chirp/ui/memedit.py:1210
+msgid "Refresh"
+msgstr "刷新"
+
+#: ../chirp/ui/memedit.py:1233
+msgid "Special Channels"
+msgstr "特殊频道"
+
+#: ../chirp/ui/memedit.py:1241
+msgid "Show Empty"
+msgstr "展示空白项"
+
+#: ../chirp/ui/memedit.py:1253
+msgid "Properties"
+msgstr "属性"
+
+#: ../chirp/ui/memedit.py:1428
+#, python-brace-format
+msgid "Cutting memory {number}"
+msgstr "正在裁剪信道 {number}"
+
+#: ../chirp/ui/memedit.py:1460
+#, python-brace-format
+msgid ""
+"Unable to paste {src} memories into {dst} rows. Increase the memory bounds "
+"or show empty memories."
+msgstr ""
+"无法黏贴源 {src} 信道到目标 {dst} 行。增加选定的目标范围或者 "
+"启用展示空项"
+
+#: ../chirp/ui/memedit.py:1474
+msgid "Overwrite?"
+msgstr "覆盖?"
+
+#: ../chirp/ui/memedit.py:1480
+#, python-brace-format
+msgid "Overwrite location {number}?"
+msgstr "覆盖信道 {number}?"
+
+#: ../chirp/ui/memedit.py:1505
+msgid "Incompatible Memory"
+msgstr "不兼容的信道"
+
+#: ../chirp/ui/memedit.py:1509
+#, python-brace-format
+msgid "Pasted memory {number} is not compatible with this radio because:"
+msgstr "黏贴的信道 {number} 与电台不兼容，由于:"
+
+#: ../chirp/ui/memedit.py:1568 ../chirp/ui/memedit.py:1583
+msgid "URCALL"
+msgstr "URCALL"
+
+#: ../chirp/ui/memedit.py:1568 ../chirp/ui/memedit.py:1584
+msgid "RPT1CALL"
+msgstr "RPT1CALL"
+
+#: ../chirp/ui/memedit.py:1568 ../chirp/ui/memedit.py:1585
+msgid "RPT2CALL"
+msgstr "RPT2CALL"
+
+#: ../chirp/ui/memedit.py:1569 ../chirp/ui/memedit.py:1586
+msgid "Digital Code"
+msgstr "数字码"
+
+#: ../chirp/ui/settingsedit.py:81
+#, fuzzy, python-format
+msgid "Error in setting value: %s"
+msgstr "设置记忆体时发生错误"
+
+#: ../chirp/ui/settingsedit.py:113
+#, python-format
+msgid "Invalid setting value: %s"
+msgstr "无效的设置值: %s"
+
+#: ../chirp/ui/settingsedit.py:174
+msgid "Enabled"
+msgstr "启用"
+
+#: ../chirp/ui/shiftdialog.py:30
+msgid "Shift"
+msgstr "频偏"
+
+#: ../chirp/ui/shiftdialog.py:64
+#, python-brace-format
+msgid "Moving {src} to {dst}"
+msgstr "正在将 {src} 移动到 {dst}"
+
+#: ../chirp/ui/shiftdialog.py:84
+#, python-brace-format
+msgid "Looking for a free spot ({number})"
+msgstr "正在寻找空位 ({number})"
+
+#: ../chirp/ui/shiftdialog.py:97
+msgid "No space to insert a row"
+msgstr "没有足够的空间以添加新行"
+
+#: ../chirp/ui/shiftdialog.py:145
+#, python-brace-format
+msgid "Moved {count} memories"
+msgstr "已移动 {count} 个记忆体"
+
+#~ msgid "Bank"
+#~ msgstr "组"
+
+#~ msgid "Automatic Repeater Offset"
+#~ msgstr "自动中继频偏置"
+
+#~ msgid "Clone failed: {error}"
+#~ msgstr "克隆失败: {error}"
+
+#~ msgid "Bank Names"
+#~ msgstr "分组名"
+
+#~ msgid "Banks"
+#~ msgstr "分组"
+
+#~ msgid "Editing new item, taking defaults"
+#~ msgstr "正在编辑新项目，取默认设置"
+
+#~ msgid "Bad value for {col}: {val}"
+#~ msgstr "{col}: {val} 非法值"
+
+#~ msgid "Delete all"
+#~ msgstr "删除所有"
+
+#~ msgid "Delete (and shift up)"
+#~ msgstr "删除并上移"
+
+#~ msgid "Go"
+#~ msgstr "去"
+
+#~ msgid "%i errors during open, check the debug log for details"
+#~ msgstr "打开时发生了 %i 个错误，请检查调试日志以获取详细信息"
