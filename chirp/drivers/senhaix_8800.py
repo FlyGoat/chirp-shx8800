@@ -30,7 +30,9 @@ LOG = logging.getLogger(__name__)
 
 MEM_SIZE = 0x1c00
 CMD_ACK = "\x06"
-BLOCK_SIZE = 64
+ACK_RETRY = 10
+BLOCK_SIZE_RX = 64
+BLOCK_SIZE_TX = 32
 
 def _rawrecv(radio, amount):
     """Raw read from the radio device"""
@@ -65,14 +67,27 @@ def _make_frame(cmd, addr, length, data=""):
 
     return frame
 
+
 def SHX8800_prep(radio):
     """Prepare radio device for transmission"""
-    _rawsend(radio, "PROGROM")
-    _rawsend(radio, "SHX")
-    _rawsend(radio, "U")
-    ack = _rawrecv(radio, 1)
-    if ack != CMD_ACK:
-        raise errors.RadioError("Radio did not ACK first command")
+    for _i in range(0, ACK_RETRY):
+        try:
+            _rawsend(radio, "PROGROM")
+            _rawsend(radio, "SHX")
+            _rawsend(radio, "U")
+            ack = _rawrecv(radio, 1)
+            if ack != CMD_ACK:
+                raise Exception("Radio did not properly ACK")
+            break
+        except Exception as inst:
+                if _i < ACK_RETRY:
+                    LOG.error("No ACK, retrying....")
+                    SHX8800_exit(radio)
+                    radio.pipe.flush()
+                    time.sleep(0.100)
+                    continue
+                else:
+                    raise errors.RadioError(inst)
 
     _rawsend(radio, "F")
     ident = _rawrecv(radio, 8)
@@ -132,8 +147,8 @@ def do_download(radio):
     radio.status_fn(status)
     data = ""
 
-    for addr in range(0x0000, MEM_SIZE, BLOCK_SIZE):
-        data += _recv_block(radio, addr, BLOCK_SIZE)
+    for addr in range(0x0000, MEM_SIZE, BLOCK_SIZE_RX):
+        data += _recv_block(radio, addr, BLOCK_SIZE_RX)
         # UI Update
         status.cur = addr
         radio.status_fn(status)
@@ -154,9 +169,9 @@ def do_upload(radio):
     status.msg = "Cloning to radio..."
     radio.status_fn(status)
 
-    for addr in range(0x0000, MEM_SIZE, BLOCK_SIZE):
-        _write_block(radio, addr, BLOCK_SIZE, 
-                    radio._mmap[addr:addr+BLOCK_SIZE])
+    for addr in range(0x0000, MEM_SIZE, BLOCK_SIZE_TX):
+        _write_block(radio, addr, BLOCK_SIZE_TX,
+                    radio._mmap[addr:addr+BLOCK_SIZE_TX])
         # UI Update
         status.cur = addr
         radio.status_fn(status)
@@ -327,6 +342,21 @@ class SenHaiX8800Radio(chirp_common.CloneModeRadio):
     VENDOR = "SenHaiX"
     MODEL = "8800"
     BAUD_RATE = 9600
+
+    @classmethod
+    def get_prompts(cls):
+        rp = chirp_common.RadioPrompts()
+        rp.experimental = \
+            ('This driver is experimental.\n'
+             '\n'
+             'Please keep a copy of your memories with the original software '
+             'if you treasure them, this driver is new and may contain'
+             ' bugs.\n'
+             'It is known that cloning progress is not perfect. If stucking '
+             'or error happens, please power cycle your radio before retry.'
+             '\n'
+             )
+        return rp
 
     def get_features(self):
         rf = chirp_common.RadioFeatures()
@@ -698,13 +728,18 @@ class SenHaiX8800Radio(chirp_common.CloneModeRadio):
                                MICGAIN_LIST[_settings.micgain]))
         advanced.append(rs)
 
-        rs = RadioSetting("keymaps.sidekey", "Side Key Short Press",
-                           RadioSettingValueMap(KEY_FUNCTIONS, _keymaps.sidekey))
-        keymaps.append(rs)
+        for entry in KEY_FUNCTIONS:
+            if entry[1] == _keymaps.sidekey:
+                rs = RadioSetting("keymaps.sidekey", "Side Key Short Press",
+                                    RadioSettingValueMap(KEY_FUNCTIONS, _keymaps.sidekey))
+                keymaps.append(rs)
 
-        rs = RadioSetting("keymaps.sidekeyl", "Side Key Long Press",
-                           RadioSettingValueMap(KEY_FUNCTIONS, _keymaps.sidekeyl))
-        keymaps.append(rs)
+
+        for entry in KEY_FUNCTIONS:
+            if entry[1] == _keymaps.sidekeyl:
+                rs = RadioSetting("keymaps.sidekeyl", "Side Key Long Press",
+                                RadioSettingValueMap(KEY_FUNCTIONS, _keymaps.sidekeyl))
+                keymaps.append(rs)
 
         rs = RadioSetting("workmodea", "Work Mode (A)",
                             RadioSettingValueList(
